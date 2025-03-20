@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from backend.database import async_session_maker
 from backend.text_analysis.models import Articles
-from utils import parse_time
+from utils import parse_html, parse_time
 
 
 class RSSCrawler:
@@ -83,19 +83,19 @@ class RSSCrawler:
                 # obligatory fields are there
                 ids.append(mmh3_hash(article_metadata.title, seed=43))
                 parsed_titles.append(article_metadata.title)
-                pub_dates.append(article_metadata.published)
+                pub_dates.append(parse_time(article_metadata.published))
                 if "link" in article_metadata.keys():
                     links.append(article_metadata.link)
                 else:
                     links.append("missing")
 
                 if "summary" in article_metadata.keys():
-                    descriptions.append(article_metadata.summary)
+                    descriptions.append(parse_html(article_metadata.summary))
                 else:
                     descriptions.append("missing")
 
                 if "content" in article_metadata.keys():
-                    contents.append(article_metadata.content)
+                    contents.append(parse_html(article_metadata.content))
                 else:
                     contents.append("missing")
 
@@ -105,8 +105,8 @@ class RSSCrawler:
                 "article_id": ids,
                 "title": parsed_titles,
                 "link": links,
-                "pub_date": str(parse_time(pub_dates)),
-                "description": descriptions,  # descriptions и content нужно почистить от html тэгов
+                "pub_date": pub_dates,
+                "description": descriptions,
                 "content": contents,
             }
         )
@@ -121,17 +121,17 @@ class RSSCrawler:
             table_name (str): table name to write data to
         """
 
-        for entry in df:
-            for _, row in df.iterrows():  # Итерируемся по строкам DataFrame
-                entry = row.to_dict()  # Преобразуем строку в словарь
-                stmt = (
-                    insert(Articles)
-                    .values(**entry)  # Теперь entry — это словарь
-                    .on_conflict_do_update(
-                        index_elements=["article_id"],  # Уникальный ключ для проверки
-                        set_=entry,  # Обновляем все поля
-                    )
+        # for entry in df:
+        for _, row in df.iterrows():  # Итерируемся по строкам DataFrame
+            entry = row.to_dict()  # Преобразуем строку в словарь
+            stmt = (
+                insert(Articles)
+                .values(**entry)  # Теперь entry — это словарь
+                .on_conflict_do_update(
+                    index_elements=["link"],  # Уникальный ключ для проверки
+                    set_=entry,  # Обновляем все поля
                 )
+            )
             await session.execute(stmt)
         await session.commit()
 

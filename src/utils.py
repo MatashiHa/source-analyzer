@@ -1,8 +1,9 @@
+import datetime
 import os
 import re
-from datetime import datetime
 
 import pytz
+from bs4 import BeautifulSoup
 from dateutil import parser as dateutil_parser
 from delorean import parse as delorean_date_parse
 from dotenv import load_dotenv
@@ -39,19 +40,26 @@ def parse_time(ts: str, named_timezones=("EST", "GMT", "UTC")) -> datetime.datet
     # if one of EST, GMT, UTC is specified as a timezone, parse it with dateutils
     tzinfos = {tz: pytz.timezone(tz) for tz in named_timezones}
     if ts[-3:] in named_timezones:
-        return dateutil_parser.parse(ts, tzinfos=tzinfos)
+        dt = dateutil_parser.parse(ts, tzinfos=tzinfos)
 
     # if instead an offset is specified like +0100, we use the delorean parser
     elif re.match(pattern=r"[\+\-]\d{4}", string=ts[-5:]):
-        return delorean_date_parse(ts).datetime
+        dt = delorean_date_parse(ts).datetime
 
     # otherwise we return UTC time
     else:
-        return delorean_date_parse(ts).datetime
+        dt = delorean_date_parse(ts).datetime
+
+    return dt.replace(tzinfo=None)
 
 
-def parse_html():
-    pass
+def parse_html(html_text: str) -> str:
+    soup = BeautifulSoup(
+        html_text, "lxml"
+    )  # Используем lxml для более быстрого парсинга
+    clean_text = soup.get_text(separator=" ")
+    clean_text = " ".join(clean_text.split())
+    return clean_text
 
 
 # def get_logger(name: str) -> logging.Logger:

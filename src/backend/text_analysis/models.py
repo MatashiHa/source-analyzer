@@ -19,11 +19,13 @@ class Articles(Base):
     article_id: Mapped[int] = mapped_column(primary_key=True)
     # feed_id: Mapped[int] = mapped_column(ForeignKey("feeds.id"))
     title: Mapped[str] = mapped_column()
-    link: Mapped[str] = mapped_column()
+    link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
     description: Mapped[str | None] = mapped_column()  # нужно читить от тегов
     content: Mapped[str | None] = mapped_column()  # нужно читить от тегов
 
+
+# link_index = Index("idx_link", Articles.link)
 
 # TODO: title и description подаются LLM для анализа после чего они возвращают
 # json с полученными результатами
