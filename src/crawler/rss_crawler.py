@@ -45,7 +45,7 @@ class RSSCrawler:
             dataframes_per_url.append(curr_df)
             print(f"Parsed {url} feed with {len(feed)} records.")
 
-        df = pd.concat(dataframes_per_url).drop_duplicates()
+        df = pd.concat(dataframes_per_url).drop_duplicates(subset="article_id")
         df.set_index("article_id")
         print(f"Parsed {len(urls)} feeds with {len(df)} records in total.")
         return df
