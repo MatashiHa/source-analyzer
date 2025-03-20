@@ -16,7 +16,7 @@ from ..database import Base
 # у RSS-фида есть набор статей
 class Articles(Base):
     __tablename__ = "articles"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(primary_key=True)
     # feed_id: Mapped[int] = mapped_column(ForeignKey("feeds.id"))
     title: Mapped[str] = mapped_column()
     link: Mapped[str] = mapped_column()
