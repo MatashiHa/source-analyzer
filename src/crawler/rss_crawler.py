@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import List, Set
 
 import feedparser
@@ -10,7 +11,7 @@ from tqdm import tqdm
 
 from backend.database import async_session_maker
 from backend.text_analysis.models import Articles
-from utils import parse_html, parse_time
+from utils import filter_on_publication_date, parse_html, parse_time
 
 
 class RSSCrawler:
@@ -139,13 +140,17 @@ class RSSCrawler:
         # прнимаем запрос от пользователя с url
         # эти url парсим, обрабатываем а потом обновляем БД
         df = await self.parse_rss_feeds(self.urls)
-        print("data is parsed")
+        print("data parsed")
+
+        # we'll keep only today's news
+        today = datetime.today().strftime("%Y-%m-%d")
+        filtered_df = filter_on_publication_date(df=df, min_date=today)
+        print("data processed")
 
         # preprocessed_df = await self.processor(df)
-        # print("data is processed")
 
         async with async_session_maker() as session:
-            await self.update_db(session, df)
+            await self.update_db(session, filtered_df)
         print("DB updated!")
 
 

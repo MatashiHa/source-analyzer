@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 
+import pandas as pd
 import pytz
 from bs4 import BeautifulSoup
 from dateutil import parser as dateutil_parser
@@ -54,12 +55,34 @@ def parse_time(ts: str, named_timezones=("EST", "GMT", "UTC")) -> datetime.datet
 
 
 def parse_html(html_text: str) -> str:
+    """cleans text from html tags and uses lxml for faster processing
+
+    Args:
+        html_text (str): arbitrary text
+
+    Returns:
+        str: cleaned texts
+    """
     soup = BeautifulSoup(
         html_text, "lxml"
     )  # Используем lxml для более быстрого парсинга
     clean_text = soup.get_text(separator=" ")
     clean_text = " ".join(clean_text.split())
     return clean_text
+
+
+def filter_on_publication_date(
+    df: pd.DataFrame, min_date: str, pub_timestamp_col_name: str = "pub_date"
+) -> pd.DataFrame:
+    """
+    Leave only texts in `text_col_name` column of the DataFrame `df` that are longer than
+    `min_length_words` words.
+    :param df: a DataFrame
+    :param min_date: date formatted as YYYY-MM-DD
+    :param pub_timestamp_col_name: column name to filter on
+    :return: bool
+    """
+    return df.loc[df[pub_timestamp_col_name] >= min_date]
 
 
 # def get_logger(name: str) -> logging.Logger:
