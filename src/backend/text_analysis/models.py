@@ -1,5 +1,6 @@
 import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
@@ -23,6 +24,7 @@ class Articles(Base):
     pub_date: Mapped[datetime.datetime] = mapped_column()
     description: Mapped[str | None] = mapped_column()  # нужно читить от тегов
     content: Mapped[str | None] = mapped_column()  # нужно читить от тегов
+    embeddings = mapped_column(Vector(512))
 
 
 # link_index = Index("idx_link", Articles.link)
