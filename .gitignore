@@ -1,6 +1,5 @@
 *.env
 *.vscode
-*toy_rss.txt
 *__pycache__
 
 

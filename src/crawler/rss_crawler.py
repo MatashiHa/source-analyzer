@@ -147,7 +147,7 @@ class RSSCrawler:
         filtered_df = filter_on_publication_date(df=df, min_date=today)
         print("data processed")
 
-        # preprocessed_df = await self.processor(df)
+        embedded_df = await self.processor.get_embedding(df=df, text_col_name="title")
 
         async with async_session_maker() as session:
             await self.update_db(session, filtered_df)
