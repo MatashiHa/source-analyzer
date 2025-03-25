@@ -1,7 +1,7 @@
 import sys
 from os.path import abspath, dirname
 
-from backend.database import Base
+from backend.database.database import Base
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
@@ -13,7 +13,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from backend.text_analysis.models import Articles  # noqa
+from backend.database.models import Articles  # noqa
 from utils import get_conn_string
 
 # this is the Alembic Config object, which provides

@@ -1,22 +1,29 @@
-import asyncio
 from datetime import datetime
 from typing import List, Set
 
 import feedparser
 import pandas as pd
+import torch
 from mmh3 import hash as mmh3_hash
+from processor import get_embeddings
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
+from transformers import BertModel, BertTokenizer
 
-from backend.database import async_session_maker
-from backend.text_analysis.models import Articles
+from backend.database.database import async_session_maker
+from backend.database.models import Articles
 from utils import filter_on_publication_date, parse_html, parse_time
+
+# Загрузка модели и токенизатора
+model_name = "bert-base-multilingual-cased"
+tokenizer = BertTokenizer.from_pretrained(model_name)
+model = BertModel.from_pretrained(model_name)
 
 
 class RSSCrawler:
     # потенциально можно будет сделать API и связать с processor
-    def __init__(self, session: AsyncSession, urls: Set[str], processor: None):
+    def __init__(self, session: AsyncSession, urls: Set[str]):
         """Class representing RSS crawler to read, process and update vector DB
 
         Args:
@@ -26,7 +33,6 @@ class RSSCrawler:
         """
         self.session = session
         self.urls = urls
-        self.processor = processor
 
     async def parse_rss_feeds(self, urls) -> pd.DataFrame:
         """Goes through all rss-feeds, gets new articles
@@ -142,28 +148,41 @@ class RSSCrawler:
         df = await self.parse_rss_feeds(self.urls)
         print("data parsed")
 
-        # we'll keep only today's news
+        # пока используем привязку к сегодняшнему дню, потом можно сделать пользовательскую настройку
         today = datetime.today().strftime("%Y-%m-%d")
-        filtered_df = filter_on_publication_date(df=df, min_date=today)
+        filtered_df = filter_on_publication_date(df=df, min_date=today).copy()
         print("data processed")
 
-        embedded_df = await self.processor.get_embedding(df=df, text_col_name="title")
+        if torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
+
+        print(device)
+        df_with_embeddings = get_embeddings(
+            model=model,
+            tokenizer=tokenizer,
+            df=filtered_df,
+            col_name="title",
+            device=device,
+        )
+        filtered_df.loc[:, "embeddings"] = list(df_with_embeddings.cpu().numpy())
 
         async with async_session_maker() as session:
             await self.update_db(session, filtered_df)
         print("DB updated!")
 
 
-async def main():
+async def import_data():
     """creates and runs the crawler"""
     urls = [
         "https://habr.com/ru/rss/feed/9af9dfc74138343b34b7948a385d7713?fl=ru&types%5B%5D=article&types%5B%5D=post&types%5B%5D=news"
     ]
 
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, urls, None)
+        crawler = RSSCrawler(session, urls)
         await crawler.run()
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
