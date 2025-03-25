@@ -13,17 +13,18 @@ def get_embeddings(
     model: any, device: str, df: pd.DataFrame, col_name: str = "title"
 ) -> pd.DataFrame:
     """get dataframe with column {col_name}, gets embeddings
-       on all entries and returns dataframe with embeddings
+    on all entries and returns dataframe with embeddings
 
     Args:
         model (any): embedding model
         device (str): cpu or gpu(cuda)
-        df (_type_): dataframe with columns to get embedding from
+        df (pd.DataFrame): dataframe with columns to get embedding from
         col_name (str, optional): column name of dataframe. Defaults to "title".
 
     Returns:
         _type_: processed dataframe with embeddings column
     """
+
     # Токенизация и получение эмбеддингов
     inputs = tokenizer(
         df[col_name].to_list(),
@@ -33,6 +34,7 @@ def get_embeddings(
         max_length=512,
     ).to(device)
     with torch.no_grad():
+        model.to(device)
         outputs = model(**inputs)
     # Используем скрытые состояния последнего слоя
     last_hidden_states = outputs.last_hidden_state
@@ -41,20 +43,17 @@ def get_embeddings(
     return embeddings
 
 
-def main():
-    sentances = pd.DataFrame(
-        [
+sentances = pd.DataFrame(
+    {
+        "title": [
             "Привет, как дела?",
             "Здравствуйте, как у вас дела?",
             "Что нового?",
             "Как поживаете?",
         ]
-    )
+    }
+)
 
-    if torch.cuda.is_available():
-        device = "cuda"
-    get_embeddings(model, device, sentances)
-
-
-if __name__ == "__main__":
-    main()
+if torch.cuda.is_available():
+    device = "cuda"
+print(get_embeddings(model, device, sentances))
