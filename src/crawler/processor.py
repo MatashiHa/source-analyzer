@@ -4,8 +4,8 @@ import torch
 
 # Функция для получения эмбеддингов предложений
 def get_embeddings(
-    model: any,
     tokenizer: any,
+    model: any,
     device: str,
     df: pd.DataFrame,
     col_name: str = "title",
@@ -14,8 +14,8 @@ def get_embeddings(
     on all entries and returns dataframe with embeddings
 
     Args:
-        model (any): embedding model
         device (str): cpu or gpu(cuda)
+        model (any): embedding model
         df (pd.DataFrame): dataframe with columns to get embedding from
         col_name (str, optional): column name of dataframe. Defaults to "title".
 
@@ -40,11 +40,12 @@ def get_embeddings(
             truncation=True,
             max_length=512,
         ).to(device)
-        with torch.no_grad():
-            model.to(device)
-            outputs = model(**inputs)
-        # Используем скрытые состояния последнего слоя
-        last_hidden_states = outputs.last_hidden_state
-        # Усредняем по токенам для получения одного вектора для каждого предложения
-        embeddings = last_hidden_states.mean(dim=1)
-        return embeddings
+
+    with torch.no_grad():
+        model.to(device)
+        outputs = model(**inputs, output_hidden_states=True)
+    # Используем скрытые состояния последнего слоя
+    last_hidden_states = outputs.hidden_states[-1]
+    # Усредняем по токенам для получения одного вектора для каждого предложения
+    embeddings = last_hidden_states.mean(dim=1)
+    return embeddings

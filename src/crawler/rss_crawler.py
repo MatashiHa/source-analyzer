@@ -5,20 +5,20 @@ import feedparser
 import pandas as pd
 import torch
 from mmh3 import hash as mmh3_hash
-from processor import get_embeddings
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
-from transformers import BertModel, BertTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from backend.database.database import async_session_maker
 from backend.database.models import Articles
 from utils import filter_on_publication_date, parse_html, parse_time
 
-# Загрузка модели и токенизатора
+from .processor import get_embeddings
+
 model_name = "bert-base-multilingual-cased"
-tokenizer = BertTokenizer.from_pretrained(model_name)
-model = BertModel.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
 
 class RSSCrawler:
@@ -29,8 +29,9 @@ class RSSCrawler:
         Args:
             session (AsyncSession): session to make transactions to DB
             urls (Set[str]): set of urls to get rss feed form
-            processor (any): text preprocessing from processor.py
+            embedding_model (any): text preprocessing from processor.py
         """
+        # print(urls)
         self.session = session
         self.urls = urls
 
@@ -44,9 +45,12 @@ class RSSCrawler:
         dataframes_per_url: List[pd.DataFrame] = []
 
         for url in tqdm(urls, total=len(urls)):
+            # print("\n", url, "\n")
             feed: List[feedparser.util.FeedParserDict] = feedparser.parse(url)[
                 "entries"
             ]
+            if len(feed) == 0:
+                print("Feed was empty.")
             curr_df: pd.DataFrame = await self.__parse_rss_feed(feed)
             dataframes_per_url.append(curr_df)
             print(f"Parsed {url} feed with {len(feed)} records.")
@@ -70,7 +74,6 @@ class RSSCrawler:
             pd.DataFrame: a Dataframe with title, publication time,
             link, description and content if exists
         """
-
         ids, parsed_titles, links, pub_dates, descriptions, contents = (
             [],
             [],
@@ -142,7 +145,7 @@ class RSSCrawler:
             await session.execute(stmt)
         await session.commit()
 
-    async def run(self):
+    async def run(self, tokenizer, model):
         # прнимаем запрос от пользователя с url
         # эти url парсим, обрабатываем а потом обновляем БД
         df = await self.parse_rss_feeds(self.urls)
@@ -153,15 +156,11 @@ class RSSCrawler:
         filtered_df = filter_on_publication_date(df=df, min_date=today).copy()
         print("data processed")
 
-        if torch.cuda.is_available():
-            device = "cuda"
-        else:
-            device = "cpu"
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        print(device)
         df_with_embeddings = get_embeddings(
-            model=model,
             tokenizer=tokenizer,
+            model=model,
             df=filtered_df,
             col_name="title",
             device=device,
@@ -173,15 +172,15 @@ class RSSCrawler:
         print("DB updated!")
 
 
-async def import_data():
+async def import_data(args, tokenizer, model):
     """creates and runs the crawler"""
-    urls = [
-        "https://habr.com/ru/rss/feed/9af9dfc74138343b34b7948a385d7713?fl=ru&types%5B%5D=article&types%5B%5D=post&types%5B%5D=news"
-    ]
+    # urls = [
+    #     "https://habr.com/ru/rss/feed/9af9dfc74138343b34b7948a385d7713?fl=ru&types%5B%5D=article&types%5B%5D=post&types%5B%5D=news"
+    # ]
 
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, urls)
-        await crawler.run()
+        crawler = RSSCrawler(session, [args.url])
+        await crawler.run(tokenizer, model)
 
 
 # if __name__ == "__main__":
