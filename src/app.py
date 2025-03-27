@@ -1,11 +1,13 @@
 import argparse
 import asyncio
 import os
+import sys
 from enum import Enum
 
 import torch
 from dotenv import load_dotenv
 from transformers import (
+    AutoModel,
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
@@ -17,10 +19,15 @@ from crawler.rss_crawler import import_data
 
 load_dotenv(override=True)
 logging.set_verbosity_error()
+# Получаем текущую рабочую директорию (PWD) и добавляем /src
+project_src_path = os.path.join(os.getcwd(), "src")
+
+# Добавляем путь в PYTHONPATH
+sys.path.insert(0, project_src_path)
 
 
-def run_async_function(args, tokenizer, model):
-    asyncio.run(args.func(args, tokenizer, model))
+def run_async_function(args, tokenizer, model, embedding_model, device):
+    asyncio.run(args.func(args, tokenizer, model, embedding_model, device))
 
 
 class Command(Enum):
@@ -65,13 +72,14 @@ def main():
             bnb_config = None
 
         tokenizer = AutoTokenizer.from_pretrained(
-            os.getenv("TOKENIZER_NAME"),
+            os.getenv("LLM_MODEL_NAME"),
             token=os.getenv("HF_TOKEN"),
         )
-        embedding_model = AutoModelForCausalLM.from_pretrained(
+        embedding_model = AutoModel.from_pretrained(
             os.getenv("EMBEDDING_MODEL_NAME"),
             token=os.getenv("HF_TOKEN"),
         )
+        embedding_model.resize_token_embeddings(len(tokenizer))
         if args.command == "import-data":
             run_async_function(args, tokenizer, embedding_model)
         elif args.command == "chat":
@@ -82,7 +90,7 @@ def main():
                 device_map=device,
                 torch_dtype=torch.float16,
             )
-            args.func(args, tokenizer, model, embedding_model, device)
+            run_async_function(args, tokenizer, model, embedding_model, device)
         else:
             print("Hello! This is a RAG test program!")
     else:

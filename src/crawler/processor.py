@@ -34,11 +34,11 @@ def get_embeddings(
     else:
         # case when a single string with no column is passed
         inputs = tokenizer(
-            df[0][0],
+            df[0].to_list(),
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=512,
+            max_length=1024,
         ).to(device)
 
     with torch.no_grad():
@@ -47,5 +47,6 @@ def get_embeddings(
     # Используем скрытые состояния последнего слоя
     last_hidden_states = outputs.hidden_states[-1]
     # Усредняем по токенам для получения одного вектора для каждого предложения
-    embeddings = last_hidden_states.mean(dim=1)
-    return embeddings
+    embeddings = last_hidden_states.mean(dim=1).cpu()
+    shape = embeddings[0].numpy().shape[0]
+    return embeddings, shape

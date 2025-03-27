@@ -19,17 +19,6 @@ template = """[INST]
         """
 
 
-# def get_retrieval_condition(query_embedding, threshold=0.7) -> str:
-#     # Convert query embedding to a string format for SQL query
-#     query_embedding_str = ",".join(map(str, query_embedding))
-
-#     # SQL condition for cosine similarity (<=>), ordered in relevancy
-#     condition = f"(embeddings <=> '{query_embedding_str}') > {threshold} \
-#                     ORDER BY embeddings <=> '{query_embedding_str}'"
-
-#     return condition
-
-
 async def rag_query(
     tokenizer: any, model: any, embedding_model: any, device: str, query: str
 ) -> str:
@@ -43,42 +32,28 @@ async def rag_query(
         query (_type_): entry query from user
     """
 
-    # getting an embedding of the query
-    query_embedding = Articles(
-        embeddings=get_embeddings(
-            tokenizer=tokenizer,
-            model=embedding_model,
-            device=device,
-            df=pd.DataFrame({query}),
-        ).to_list()
+    query_embedding, _ = get_embeddings(
+        tokenizer=tokenizer,
+        model=embedding_model,
+        device=device,
+        df=pd.DataFrame({query}),
     )
-
-    # passing query to get retrieval condition
-    # retrieval_condition = get_retrieval_condition(query_embedding=query_embedding)
+    query_embedding = query_embedding.tolist()[0]
+    # print(shape)
+    # if shape != 768:
+    #     projection = nn.Linear(shape, 768).half().eval().to(device)
+    #     query_embedding = projection(query_embedding)
 
     # making async request to database with set condition to get 5 max relevant examples
     async with async_session_maker() as session:
         stmt = (
             select(Articles.title)
-            .order_by(
-                Articles.embeddings.cosine_distance(query_embedding)
-            )  # по какой-то причине функция из pgvector не подсвечивается
+            .order_by(Articles.embeddings.cosine_distance(query_embedding))
             .limit(5)
         )
 
         result = (await session.scalars(stmt)).all()
-        # result = await session.execute(
-        #     text(f"""
-        #         SELECT title
-        #         FROM Articles
-        #         WHERE {retrieval_condition}
-        #         LIMIT 5
-        #     """)
-        # )
 
-        # retrieved = result.scalars().all()
-
-        # getting all the titles in one query
         rag_query = " ".join(result)
         query_template = template.format(context=rag_query, question=query)
 
@@ -86,7 +61,7 @@ async def rag_query(
 
         # getting response from model by passing query with context
         generated_response = model.generate(
-            input.to(device), max_new_tokens=50, pad_token_id=tokenizer.eos_token_id
+            input.to(device), max_new_tokens=200, pad_token_id=tokenizer.eos_token_id
         )
 
         return tokenizer.decode(

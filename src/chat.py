@@ -1,7 +1,7 @@
 from rag import rag_query
 
 
-def chat(args, tokenizer, model, embedding_model, device):
+async def chat(args, tokenizer, model, embedding_model, device):
     """chat cycle with a set LLM
 
     Args:
@@ -18,7 +18,7 @@ def chat(args, tokenizer, model, embedding_model, device):
         if question.lower() == "exit":
             break
 
-        answer = rag_query(
+        answer = await rag_query(
             tokenizer=tokenizer,
             model=model,
             embedding_model=embedding_model,
