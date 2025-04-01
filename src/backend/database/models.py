@@ -1,7 +1,9 @@
 import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
@@ -14,6 +16,14 @@ from .database import Base
 #     last_updated: Mapped[str] = mapped_column()
 
 
+class User(Base):
+    __tablename__ = "user"
+    user_id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    # email: Mapped[str] = mapped_column()
+    # provider: Mapped[str] = mapped_column()
+
+
 # у RSS-фида есть набор статей
 class Articles(Base):
     __tablename__ = "articles"
@@ -22,15 +32,25 @@ class Articles(Base):
     title: Mapped[str] = mapped_column()
     link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
-    description: Mapped[str | None] = mapped_column()  # нужно читить от тегов
-    content: Mapped[str | None] = mapped_column()  # нужно читить от тегов
+    description: Mapped[str | None] = mapped_column()
+    content: Mapped[str | None] = mapped_column()
     embeddings = mapped_column(Vector(768))
 
 
-# link_index = Index("idx_link", Articles.link)
-
 # TODO: title и description подаются LLM для анализа после чего они возвращают
 # json с полученными результатами
+class LLMConnection(Base):
+    __tablename__ = "llm_conn"
+    request_id: Mapped[int] = mapped_column(primary_key=True)
+    category: Mapped[str] = (
+        mapped_column()
+    )  # параметр по которому проводиться классификация
+    article_id = mapped_column(
+        ForeignKey("articles.article_id")
+    )  # запись по которой проводиться классификация
+    response = mapped_column(JSONB, nullable=True)  # ответ модели
+
+    article = relationship("Articles")
 
 
 # TODO: полученный json просмативается и записывается резаультат анализа
