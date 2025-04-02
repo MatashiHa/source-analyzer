@@ -14,8 +14,8 @@ from transformers import (
     logging,
 )
 
-from chat import chat
 from crawler.rss_crawler import import_data
+from processor import process
 
 load_dotenv(override=True)
 logging.set_verbosity_error()
@@ -32,7 +32,7 @@ def run_async_function(args, tokenizer, model, embedding_model, device):
 
 class Command(Enum):
     IMPORT_DATA = "import-data"
-    CHAT = "chat"
+    PROCESS_DATA = "process-data"
 
 
 def main():
@@ -49,13 +49,17 @@ def main():
         Command.IMPORT_DATA.value, help="Import data"
     )
 
-    # пока захардкодили
     import_data_parser.add_argument("url", type=str, help="Specify the rss-feed url")
     import_data_parser.set_defaults(func=import_data)
 
-    # chat command
-    chat_parser = subparsers.add_parser(Command.CHAT.value, help="Use chat feature")
-    chat_parser.set_defaults(func=chat)
+    # process-data command
+    process_parser = subparsers.add_parser(
+        Command.PROCESS_DATA.value, help="Process data available in DB"
+    )
+    process_parser.add_argument(
+        "category", type=str, help="Specify the classification category"
+    )
+    process_parser.set_defaults(func=process)
 
     args = parser.parse_args()
     if hasattr(args, "func"):
@@ -82,7 +86,7 @@ def main():
         embedding_model.resize_token_embeddings(len(tokenizer))
         if args.command == "import-data":
             run_async_function(args, tokenizer, embedding_model)
-        elif args.command == "chat":
+        elif args.command == "process":
             model = AutoModelForCausalLM.from_pretrained(
                 os.getenv("LLM_MODEL_NAME"),
                 token=os.getenv("HF_TOKEN"),
@@ -92,7 +96,7 @@ def main():
             )
             run_async_function(args, tokenizer, model, embedding_model, device)
         else:
-            print("Hello! This is a RAG test program!")
+            print("Hello! This is a data classification program!")
     else:
         print("Invalid command. Use '--help' for assistance.")
 

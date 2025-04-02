@@ -174,12 +174,14 @@ class RSSCrawler:
 
 async def import_data(args, tokenizer, model):
     """creates and runs the crawler"""
-    # urls = [
-    #     "https://habr.com/ru/rss/feed/9af9dfc74138343b34b7948a385d7713?fl=ru&types%5B%5D=article&types%5B%5D=post&types%5B%5D=news"
-    # ]
-
+    if args.urls:
+        urls = args.urls
+    else:
+        urls = ["http://static.feed.rbc.ru/rbc/logical/footer/news.rss"]
+    if not isinstance(urls, list):
+        urls = [urls]
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, [args.url])
+        crawler = RSSCrawler(session, urls)
         await crawler.run(tokenizer, model)
 
 

@@ -36,22 +36,19 @@ class Articles(Base):
     content: Mapped[str | None] = mapped_column()
     embeddings = mapped_column(Vector(768))
 
+    llm_conn: Mapped["LLMConnection"] = relationship(
+        back_populates="article", uselist=False
+    )
 
-# TODO: title и description подаются LLM для анализа после чего они возвращают
-# json с полученными результатами
+
 class LLMConnection(Base):
     __tablename__ = "llm_conn"
     request_id: Mapped[int] = mapped_column(primary_key=True)
-    category: Mapped[str] = (
-        mapped_column()
-    )  # параметр по которому проводиться классификация
-    article_id = mapped_column(
-        ForeignKey("articles.article_id")
-    )  # запись по которой проводиться классификация
+    # document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.document_id"))
+    article_id: Mapped[int | None] = mapped_column(ForeignKey("articles.article_id"))
+    category: Mapped[str] = mapped_column()
     response = mapped_column(JSONB, nullable=True)  # ответ модели
+    is_anotating: Mapped[bool] = mapped_column()
 
-    article = relationship("Articles")
-
-
-# TODO: полученный json просмативается и записывается резаультат анализа
-# результаты анализа тоже хранаться в БД
+    # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
+    article: Mapped["Articles"] = relationship(back_populates="llm_conn")

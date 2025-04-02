@@ -1,5 +1,3 @@
-import re
-
 import pandas as pd
 import torch
 from sqlalchemy import select
@@ -21,7 +19,9 @@ context = [
     },
     {
         "role": "user",
-        "content": "Provide positivity classification of the text: the weather is good tonight, but im too tired.",
+        "content": """Context: So much happened today
+        Category: positivity
+        Text: the weather is good tonight, but im too tired.""",
     },
     {
         "role": "assistant",
@@ -45,16 +45,13 @@ context = [
 
 template = """
     Context: {context}
-    Question: {question}
+    Category: {category}
+    Text: {text}
 """
 
 
-def remove_json_markdown(text):
-    return re.sub(r"```json\s*([\s\S]*?)\s*```", r"\1", text)
-
-
-async def rag_query(
-    tokenizer: any, model: any, embedding_model: any, device: str, query: str
+async def rag_processing(
+    tokenizer: any, model: any, embedding_model: any, device: str, request: list
 ) -> str:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
@@ -63,14 +60,14 @@ async def rag_query(
         tokenizer (_type_): some tokenizer
         model (_type_): model to generate response
         device (_type_): cpu or cuda
-        query (_type_): entry query from user
+        request (_type_): list containig category and text from the source
     """
 
     query_embedding, _ = get_embeddings(
         tokenizer=tokenizer,
         model=embedding_model,
         device=device,
-        df=pd.DataFrame({query}),
+        df=pd.DataFrame({request[1]}),
     )
     query_embedding = query_embedding.tolist()[0]
     # print(shape)
@@ -86,19 +83,21 @@ async def rag_query(
             .limit(5)
         )
 
+        # TODO: нужно обрабатывать  необработванные статьи в цикле выбирая пять акутальных статей и
+        # составлять из них пары вопрос-ответ (если есть размеченный ответ) которыми и дополнять контекст
+        # т.е. код снизу измениться. Если ответа нет, то дополнять только релевантынм текстом, чтобы
+        # модель поняла какое место занимает текущее преложение в контексте.
+        # Вопрос в паре это или заголовки(+описание?) статей для rss или отрыки текста из документов.
         result = (await session.scalars(stmt)).all()
 
         rag_query = " ".join(result)
 
-        query_template = template.format(context=rag_query, question=query)
+        query_template = template.format(
+            context=rag_query, category=request[0], text=request[1]
+        )
 
         # добавляем в контекст вопрос
         context.append({"role": "user", "content": query_template})
-
-        # context.append({
-        # })
-
-        # input = tokenizer.encode(query_template, return_tensors="pt")
 
         pipe = pipeline(
             "text-generation",
@@ -113,17 +112,5 @@ async def rag_query(
         }
 
         output = pipe(context, **generation_args)
-
-        # TODO: сохранять ответы на запросы в бд.
         # sometimes output might contain json markdown
-        return remove_json_markdown(output[0]["generated_text"])
-
-
-# # getting response from model by passing query with context
-# generated_response = model.generate(
-#     input.to(device), max_new_tokens=150, pad_token_id=tokenizer.eos_token_id
-# )
-
-# return tokenizer.decode(
-#     generated_response[0][input.shape[-1] :], skip_special_tokens=True
-# )
+        return output[0]["generated_text"]
