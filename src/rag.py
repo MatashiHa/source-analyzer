@@ -1,10 +1,12 @@
+import json
+
 import pandas as pd
 import torch
 from sqlalchemy import select
 from transformers import pipeline
 
 from backend.database.database import async_session_maker
-from backend.database.models import Articles
+from backend.database.models import Articles, LLMConnection
 from crawler.processor import get_embeddings
 
 torch.random.manual_seed(0)
@@ -78,7 +80,13 @@ async def rag_processing(
     # making async request to database with set condition to get 5 max relevant examples
     async with async_session_maker() as session:
         stmt = (
-            select(Articles.title)
+            select(
+                Articles.title,
+                Articles.description,
+                LLMConnection.category,
+                LLMConnection.response,
+            )
+            .join(LLMConnection)
             .order_by(Articles.embeddings.cosine_distance(query_embedding))
             .limit(5)
         )
@@ -88,9 +96,16 @@ async def rag_processing(
         # т.е. код снизу измениться. Если ответа нет, то дополнять только релевантынм текстом, чтобы
         # модель поняла какое место занимает текущее преложение в контексте.
         # Вопрос в паре это или заголовки(+описание?) статей для rss или отрыки текста из документов.
-        result = (await session.scalars(stmt)).all()
-
-        rag_query = " ".join(result)
+        # result = (await session.scalars(stmt)).all()
+        result = (await session.execute(stmt)).all()
+        combined_results = [
+            f"Title: {title}; Description:{description}; Category:{category};Result:{json.dumps(response, ensure_ascii=False)}"
+            if response
+            else f"{title};{description}"
+            for title, description, category, response in result
+        ]
+        rag_query = " ".join(combined_results)
+        # rag_query = " ".join(result)
 
         query_template = template.format(
             context=rag_query, category=request[0], text=request[1]

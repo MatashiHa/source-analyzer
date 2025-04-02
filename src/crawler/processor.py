@@ -29,7 +29,7 @@ def get_embeddings(
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=512,
+            max_length=1024,
         ).to(device)
     else:
         # case when a single string with no column is passed
