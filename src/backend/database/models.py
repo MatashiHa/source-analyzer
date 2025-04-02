@@ -16,12 +16,12 @@ from .database import Base
 #     last_updated: Mapped[str] = mapped_column()
 
 
-class User(Base):
-    __tablename__ = "user"
-    user_id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column()
-    # email: Mapped[str] = mapped_column()
-    # provider: Mapped[str] = mapped_column()
+# class User(Base):
+#     __tablename__ = "user"
+#     user_id: Mapped[int] = mapped_column(primary_key=True)
+#     name: Mapped[str] = mapped_column()
+# email: Mapped[str] = mapped_column()
+# provider: Mapped[str] = mapped_column()
 
 
 # у RSS-фида есть набор статей
@@ -35,20 +35,24 @@ class Articles(Base):
     description: Mapped[str | None] = mapped_column()
     content: Mapped[str | None] = mapped_column()
     embeddings = mapped_column(Vector(768))
-
-    llm_conn: Mapped["LLMConnection"] = relationship(
-        back_populates="article", uselist=False
+    llm_conn: Mapped[list["LLMConnection"] | None] = relationship(
+        "LLMConnection", backref="article", cascade="all, delete-orphan"
     )
+    # llm_conn: Mapped["LLMConnection"] = relationship(
+    #     back_populates="articles", uselist=False
+    # )
 
 
 class LLMConnection(Base):
     __tablename__ = "llm_conn"
     request_id: Mapped[int] = mapped_column(primary_key=True)
     # document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.document_id"))
-    article_id: Mapped[int | None] = mapped_column(ForeignKey("articles.article_id"))
+    article_id: Mapped[int | None] = mapped_column(
+        ForeignKey("articles.article_id", ondelete="CASCADE")
+    )
     category: Mapped[str] = mapped_column()
     response = mapped_column(JSONB, nullable=True)  # ответ модели
-    is_anotating: Mapped[bool] = mapped_column()
+    is_annotating: Mapped[bool] = mapped_column()
 
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
-    article: Mapped["Articles"] = relationship(back_populates="llm_conn")
+    # article: Mapped["Articles"] = relationship(back_populates="llm_conn")

@@ -54,7 +54,7 @@ def parse_time(ts: str, named_timezones=("EST", "GMT", "UTC")) -> datetime.datet
     return dt.replace(tzinfo=None)
 
 
-def parse_html(html_text: str) -> str:
+def parse_html(feed_data) -> str:
     """cleans text from html tags and uses lxml for faster processing
 
     Args:
@@ -63,6 +63,19 @@ def parse_html(html_text: str) -> str:
     Returns:
         str: cleaned texts
     """
+    if hasattr(feed_data, "entries"):
+        # Извлекаем HTML-контент из всех записей
+        html_parts = [
+            entry.get("description", "") or entry.get("summary", "")
+            for entry in feed_data.entries
+        ]
+        html_text = "".join(html_parts)
+    # Если пришел список
+    elif isinstance(feed_data, list):
+        html_text = "".join(str(item) for item in feed_data)  # Приводим всё к строке
+    # Если пришла строка
+    else:
+        html_text = str(feed_data)
     soup = BeautifulSoup(
         html_text, "lxml"
     )  # Используем lxml для более быстрого парсинга

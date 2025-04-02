@@ -4,8 +4,7 @@ from sqlalchemy import or_, select
 
 from backend.database.database import async_session_maker
 from backend.database.models import Articles, LLMConnection
-
-from .rag import rag_processing
+from rag import rag_processing
 
 
 def remove_json_markdown(text):
@@ -22,18 +21,14 @@ async def process(args, tokenizer, model, embedding_model, device):
         tokenizer (_type_): some tokenizer for a query
     """
     print("Processing started.")
-    if args.category:
-        category = args.category
-    else:
-        category = "happiness"
     # тут просто запускаем процесс обработки данных в БД до тех пор пока есть неразмеченные данные
-    with async_session_maker() as session:
+    async with async_session_maker() as session:
         stmt = select(Articles).where(
-            or_(Articles.llm_conn.is_(None), Articles.llm_conn.has(is_annotating=True))
+            or_(Articles.llm_conn is None, Articles.llm_conn.has(is_annotating=False))
         )
         entries = session.execute(stmt).scalars().all()
         for entry in entries:
-            llm_conn = LLMConnection(article_id=entry.id, category=category)
+            llm_conn = LLMConnection(article_id=entry.id, category=args.category)
             session.add(llm_conn)
             await session.commit()
 
@@ -48,7 +43,7 @@ async def process(args, tokenizer, model, embedding_model, device):
                 llm_conn.response = remove_json_markdown(response)
                 await session.commit()
             except Exception as e:
-                llm_conn.respose = {"error": str(e)}
+                llm_conn.response = {"error": str(e)}
                 await session.commit()
 
     print("Processing complete!")

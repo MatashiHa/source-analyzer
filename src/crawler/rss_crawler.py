@@ -3,7 +3,6 @@ from typing import List, Set
 
 import feedparser
 import pandas as pd
-import torch
 from mmh3 import hash as mmh3_hash
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -138,14 +137,14 @@ class RSSCrawler:
                 insert(Articles)
                 .values(**entry)  # Теперь entry — это словарь
                 .on_conflict_do_update(
-                    index_elements=["link"],  # Уникальный ключ для проверки
+                    index_elements=["article_id"],  # Уникальный ключ для проверки
                     set_=entry,  # Обновляем все поля
                 )
             )
             await session.execute(stmt)
         await session.commit()
 
-    async def run(self, tokenizer, model):
+    async def run(self, tokenizer, model, device):
         # прнимаем запрос от пользователя с url
         # эти url парсим, обрабатываем а потом обновляем БД
         df = await self.parse_rss_feeds(self.urls)
@@ -154,11 +153,8 @@ class RSSCrawler:
         # пока используем привязку к сегодняшнему дню, потом можно сделать пользовательскую настройку
         today = datetime.today().strftime("%Y-%m-%d")
         filtered_df = filter_on_publication_date(df=df, min_date=today).copy()
-        print("data processed")
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        df_with_embeddings = get_embeddings(
+        df_with_embeddings, _ = get_embeddings(
             tokenizer=tokenizer,
             model=model,
             df=filtered_df,
@@ -166,23 +162,18 @@ class RSSCrawler:
             device=device,
         )
         filtered_df.loc[:, "embeddings"] = list(df_with_embeddings.cpu().numpy())
+        print("data processed")
 
         async with async_session_maker() as session:
             await self.update_db(session, filtered_df)
         print("DB updated!")
 
 
-async def import_data(args, tokenizer, model):
+async def import_data(args, tokenizer, embedding_model, device):
     """creates and runs the crawler"""
-    if args.urls:
-        urls = args.urls
-    else:
-        urls = ["http://static.feed.rbc.ru/rbc/logical/footer/news.rss"]
-    if not isinstance(urls, list):
-        urls = [urls]
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, urls)
-        await crawler.run(tokenizer, model)
+        crawler = RSSCrawler(session, args.urls)
+        await crawler.run(tokenizer, embedding_model, device)
 
 
 # if __name__ == "__main__":

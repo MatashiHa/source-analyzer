@@ -26,8 +26,11 @@ project_src_path = os.path.join(os.getcwd(), "src")
 sys.path.insert(0, project_src_path)
 
 
-def run_async_function(args, tokenizer, model, embedding_model, device):
-    asyncio.run(args.func(args, tokenizer, model, embedding_model, device))
+def run_async_function(args, tokenizer, embedding_model, device, model=None):
+    if model:
+        asyncio.run(args.func(args, tokenizer, embedding_model, device, model))
+    else:
+        asyncio.run(args.func(args, tokenizer, embedding_model, device))
 
 
 class Command(Enum):
@@ -49,7 +52,13 @@ def main():
         Command.IMPORT_DATA.value, help="Import data"
     )
 
-    import_data_parser.add_argument("url", type=str, help="Specify the rss-feed url")
+    import_data_parser.add_argument(
+        "--urls",
+        default=["http://static.feed.rbc.ru/rbc/logical/footer/news.rss"],
+        type=list,
+        help="Specify the rss-feed urls",
+        required=False,
+    )
     import_data_parser.set_defaults(func=import_data)
 
     # process-data command
@@ -57,11 +66,16 @@ def main():
         Command.PROCESS_DATA.value, help="Process data available in DB"
     )
     process_parser.add_argument(
-        "category", type=str, help="Specify the classification category"
+        "--category",
+        default="happiness",
+        type=str,
+        help="Specify the classification category",
+        required=False,
     )
     process_parser.set_defaults(func=process)
 
     args = parser.parse_args()
+    print(args)
     if hasattr(args, "func"):
         if torch.cuda.is_available():
             device = "cuda"
@@ -85,8 +99,8 @@ def main():
         )
         embedding_model.resize_token_embeddings(len(tokenizer))
         if args.command == "import-data":
-            run_async_function(args, tokenizer, embedding_model)
-        elif args.command == "process":
+            run_async_function(args, tokenizer, embedding_model, device)
+        elif args.command == "process-data":
             model = AutoModelForCausalLM.from_pretrained(
                 os.getenv("LLM_MODEL_NAME"),
                 token=os.getenv("HF_TOKEN"),

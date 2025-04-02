@@ -9,7 +9,7 @@ def get_embeddings(
     device: str,
     df: pd.DataFrame,
     col_name: str = "title",
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, int]:
     """get dataframe with column {col_name}, gets embeddings
     on all entries and returns dataframe with embeddings
 
