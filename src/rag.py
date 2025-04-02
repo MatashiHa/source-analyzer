@@ -91,15 +91,13 @@ async def rag_processing(
             .limit(5)
         )
 
-        # TODO: нужно обрабатывать  необработванные статьи в цикле выбирая пять акутальных статей и
-        # составлять из них пары вопрос-ответ (если есть размеченный ответ) которыми и дополнять контекст
-        # т.е. код снизу измениться. Если ответа нет, то дополнять только релевантынм текстом, чтобы
+        # Если ответа нет, то дополнять только релевантынм текстом, чтобы
         # модель поняла какое место занимает текущее преложение в контексте.
-        # Вопрос в паре это или заголовки(+описание?) статей для rss или отрыки текста из документов.
+        # Вопрос в паре это или заголовки(+описание?) статей для rss или отрывки текста из документов.
         # result = (await session.scalars(stmt)).all()
         result = (await session.execute(stmt)).all()
         combined_results = [
-            f"Title: {title}; Description:{description}; Category:{category};Result:{json.dumps(response, ensure_ascii=False)}"
+            f"Title: {title};Description:{description};Category:{category};Result:{json.dumps(response, ensure_ascii=False)}"
             if response
             else f"{title};{description}"
             for title, description, category, response in result
