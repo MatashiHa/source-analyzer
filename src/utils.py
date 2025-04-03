@@ -98,6 +98,10 @@ def filter_on_publication_date(
     return df.loc[df[pub_timestamp_col_name] >= min_date]
 
 
+def remove_json_markdown(text):
+    return re.sub(r"```json\s*([\s\S]*?)\s*```", r"\1", text)
+
+
 # def get_logger(name: str) -> logging.Logger:
 #     """get logger instance for debugging
 

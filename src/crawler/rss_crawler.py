@@ -7,17 +7,12 @@ from mmh3 import hash as mmh3_hash
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from backend.database.database import async_session_maker
 from backend.database.models import Articles
 from utils import filter_on_publication_date, parse_html, parse_time
 
 from .processor import get_embeddings
-
-model_name = "bert-base-multilingual-cased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
 
 
 class RSSCrawler:
@@ -44,7 +39,6 @@ class RSSCrawler:
         dataframes_per_url: List[pd.DataFrame] = []
 
         for url in tqdm(urls, total=len(urls)):
-            # print("\n", url, "\n")
             feed: List[feedparser.util.FeedParserDict] = feedparser.parse(url)[
                 "entries"
             ]
@@ -73,8 +67,7 @@ class RSSCrawler:
             pd.DataFrame: a Dataframe with title, publication time,
             link, description and content if exists
         """
-        ids, parsed_titles, links, pub_dates, descriptions, contents = (
-            [],
+        ids, parsed_titles, links, pub_dates, descriptions = (
             [],
             [],
             [],
@@ -103,11 +96,6 @@ class RSSCrawler:
                 else:
                     descriptions.append("missing")
 
-                if "content" in article_metadata.keys():
-                    contents.append(parse_html(article_metadata.content))
-                else:
-                    contents.append("missing")
-
         print(article_metadata.keys())
         df = pd.DataFrame(
             {
@@ -116,7 +104,6 @@ class RSSCrawler:
                 "link": links,
                 "pub_date": pub_dates,
                 "description": descriptions,
-                "content": contents,
             }
         )
 

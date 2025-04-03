@@ -14,42 +14,167 @@ torch.random.manual_seed(0)
 # задача состоит в том, чтобы классифицировать данные источников, для этого пользователь отправляет запрос в котором представлен параметр по которому проводиться классификация,
 # далее система должна классифицировать текст по трём классам проявления этого параметра: низкое, среднее, высокое. Для более точного запроса нужно подавать в контекст пары запрос-ответ согласно вопросу пользователя.
 context = [
+    # "role": "system",
+    # "content": """You are a helpful AI tool that returns ONLY JSON answers to classification requests containing context to help you and text to classify within levels (high, medium, low) of category.
+    # If you output anything but JSON you will have FAILED. Predicted class of level can only be with the highest probability.
+    # To help, you will be given the context with results for similar texts. If context is absent, try answer without it. NEVER mention or classify the context.
+    # JSON is REQUIRED to have fields: predicted class, key-values of level (high, medium, low) to words or phrases AND key-values of level(high, medium, low) to probabilities.
+    # Every word or phrase should be in one class ONLY and DO NOT classify words that have no meaningful impact on the given parameter or you will have FAILED. Always use words or phrases
+    # in the sources language DO NOT interpret them as you want. Make sure your answers are concise.
+    # """,
+    #     "role": "system",
+    #     "content": """You are an AI that returns ONLY JSON answers. If you output anything but JSON you will have FAILED. Follow these rules:
+    #     - Output only valid JSON.
+    #     - JSON must include:
+    #     - predicted_class: the level ("high", "medium", or "low") with the highest probability among all levels.
+    #     - class_to_words: a mapping of each level ("high", "medium", "low") to a list of words or phrases from the text.
+    #     - class_to_probabilities: a mapping of each level ("high", "medium", "low") to its probability.
+    #     - Classify only words/phrases that meaningfully impact the category.
+    #     - Use the source language without reinterpretation.
+    #     - One word/phrase can only be in one class. Don't repeat same words.
+    #     - Do not mention or classify the provided context.
+    #     - If context with similar results is given, use it; otherwise, answer without it.
+    #     Keep your answer concise.""",
+    # },
+    # {
+    #     "role": "user",
+    #     "content": """
+    #     Context: <title>: Improved Classification Model Context;
+    #     <description>: Enhanced classification logic to prevent word duplication across levels, ensure correct probability distribution, and improve accuracy in text classification.;
+    #     <category>: positivity;
+    #     <result>: {"predicted_class": "medium", "class_to_words": {"high": ["wonderful"], "medium": ["today"], "low": ["too tired", "but"]}, "class_to_probabilities": {"high": 0.3, "medium": 0.3, "low": 0.4}}
+    #     Category: positivity
+    #     Text: the weather is good tonight, but im too tired.""",
+    # },
+    # {
+    #     "role": "assistant",
+    #     "content": """
+    # {
+    #   "predicted_class": "low"
+    #   "class_to_words": {
+    #     "high": ["good"],
+    #     "medium": ["tonight"]
+    #     "low": ["tired", "but"],
+    #   },
+    #   "class_to_probabilities": {
+    #     "high": 0.25,
+    #     "medium": 0.25,
+    #     "low": 0.5
+    #     }
+    # }
+    # """,
     {
         "role": "system",
-        "content": """You are a helpful AI tool that returns ONLY JSON answers to classification requests. If you output anything but JSON you will have FAILED. 
-        JSON is REQUIRED to have fields: predicted class, key-values of level (high, medium, low) to words, key-values of level to probabilities""",
+        "content": """Вы — ИИ, который возвращает ТОЛЬКО JSON-ответы. Если вы выдадите что-либо кроме JSON, это будет ОШИБКОЙ. Следуйте этим правилам:
+        - Выводите только корректный JSON.
+        - JSON должен содержать:
+        - predicted_class: уровень ("high", "medium" или "low") с наивысшей вероятностью среди всех уровней.
+        - class_to_words: соответствие каждого уровня ("high", "medium", "low") со списком слов или фраз из текста.
+        - class_to_probabilities: соответствие каждого уровня ("high", "medium", "low") с его вероятностью.
+        - Классифицируйте только слова/фразы, которые значимо влияют на категорию.
+        - Используйте исходный язык без переосмысления.
+        - Одно слово/фраза может принадлежать только одному классу. Не повторяйте одни и те же слова.  
+        - Не упоминайте и не классифицируйте предоставленный контекст.
+        - Если дан контекст с похожими результатами, используйте его; иначе отвечайте без него.
+        Держите ответ лаконичным.""",
     },
     {
         "role": "user",
-        "content": """Context: So much happened today
-        Category: positivity
-        Text: the weather is good tonight, but im too tired.""",
+        "content": """Context:
+            <title>: Позитивный настрой на день;
+            <description>: Отличное начало дня с солнечным настроем и позитивными мыслями, которые помогут настроиться на успех.;
+            <category>: позитивность;
+            <result>: {
+            "predicted_class": "high",
+            "class_to_words": {
+                "high": ["отличное", "позитивными", "успех"],
+                "medium": ["начало", "солнечным"],
+                "low": ["не"]
+            },
+            "class_to_probabilities": {
+                "high": 0.6,
+                "medium": 0.3,
+                "low": 0.1
+            }
+        }
+        Category: позитивность
+        Text: погода сегодня хорошая, но я слишком устал.""",
     },
     {
         "role": "assistant",
         "content": """
-    {
-      "predicted_class": "low"
-      "class_to_words": {
-        "high": ["good"],
-        "medium": ["tonight"]
-        "low": ["tired", "but"],
-      },
-      "class_to_probabilities": {
-        "high": 0.25,
-        "medium": 0.25,
-        "low": 0.5
+        {
+        "predicted_class": "low",
+        "class_to_words": {
+            "high": ["хорошая"],
+            "medium": ["сегодня"],
+            "low": ["слишком устал", "но"]
+        },
+        "class_to_probabilities": {
+            "high": 0.25,
+            "medium": 0.25,
+            "low": 0.5
         }
-    }
-    """,
+        }""",
     },
 ]
 
+# context = [
+#     {
+#         "role": "system",
+#         "content": """You are an AI tool that returns ONLY JSON responses for classification tasks.
+#         If you output anything other than JSON, you have FAILED.
+
+#         The required JSON format:
+#         - `predicted_class`: the final classification (one of: "high", "medium", "low")
+#         - `class_to_words`: a dictionary where keys are levels ("high", "medium", "low") and values are lists of words classified at each level.
+#         - `class_to_probabilities`: a dictionary where keys are levels ("high", "medium", "low") and values are probabilities summing to 1.
+
+#         Strict rules:
+#         1. A word can belong to only **one** level. No duplication across multiple classes.
+#         2. Ensure the sum of `class_to_probabilities` equals 1.
+#         3. Do not classify words that have no meaningful impact on the given parameter.
+#         4. Do not classify as "low" unless it has the highest probability among the classes.
+#         5. Avoid excessive repetition within a single class to prevent token overflow.
+#         6. Be precise: classifications should reflect the actual meaning, not arbitrary assignment.
+#         """,
+#     },
+#     {
+#         "role": "user",
+#         "content": """
+#         Category: positivity
+#         Text: The weather is wonderful today, but I'm too tired.""",
+#     },
+#     {
+#         "role": "assistant",
+#         "content": """
+#         {
+#           "predicted_class": "medium",
+#           "class_to_words": {
+#             "high": ["wonderful"],
+#             "medium": ["today"],
+#             "low": ["tired", "but"]
+#           },
+#           "class_to_probabilities": {
+#             "high": 0.3,
+#             "medium": 0.4,
+#             "low": 0.3
+#           }
+#         }
+#         """,
+#     },
+# ]
+
+
+# Context: {context}
 template = """
     Context: {context}
     Category: {category}
     Text: {text}
 """
+# Ошибки в обработке: одни и те же слова в нескольких классах, иногда путает class с level (при установке predicted_level в примере), появление больших повторений в в одном классе
+# из-за чего не хватает токенов для полного ответа, неточность в классификации, пытается отнести к классу даже то что не имеет значения, иногда отсутствуют вероятности,
+# классифицирует как low хотя вероятность не наибольшая среди классов, иногда интерпретирует русские слова на английском и выдаёт мусор
 
 
 async def rag_processing(
@@ -87,6 +212,7 @@ async def rag_processing(
                 LLMConnection.response,
             )
             .join(LLMConnection)
+            .where(~LLMConnection.is_annotating)
             .order_by(Articles.embeddings.cosine_distance(query_embedding))
             .limit(5)
         )
@@ -97,7 +223,7 @@ async def rag_processing(
         # result = (await session.scalars(stmt)).all()
         result = (await session.execute(stmt)).all()
         combined_results = [
-            f"Title: {title};Description:{description};Category:{category};Result:{json.dumps(response, ensure_ascii=False)}"
+            f"<title>: {title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
             if response
             else f"{title};{description}"
             for title, description, category, response in result

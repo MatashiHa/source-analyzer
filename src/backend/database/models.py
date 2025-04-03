@@ -33,10 +33,13 @@ class Articles(Base):
     link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
     description: Mapped[str | None] = mapped_column()
-    content: Mapped[str | None] = mapped_column()
+    # content: Mapped[str | None] = mapped_column() не используем из-за отсутствия на сайтах и из-за собственных полей у сайтов, например <rbc_news:full-text>
     embeddings = mapped_column(Vector(768))
-    llm_conn: Mapped[list["LLMConnection"] | None] = relationship(
-        "LLMConnection", backref="article", cascade="all, delete-orphan"
+    llm_conn: Mapped[list["LLMConnection"]] = relationship(
+        "LLMConnection",
+        backref="article",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
     # llm_conn: Mapped["LLMConnection"] = relationship(
     #     back_populates="articles", uselist=False
@@ -52,7 +55,7 @@ class LLMConnection(Base):
     )
     category: Mapped[str] = mapped_column()
     response = mapped_column(JSONB, nullable=True)  # ответ модели
-    is_annotating: Mapped[bool] = mapped_column()
+    is_annotating: Mapped[bool] = mapped_column(default=True)
 
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
     # article: Mapped["Articles"] = relationship(back_populates="llm_conn")
