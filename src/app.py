@@ -106,7 +106,7 @@ def main():
                 token=os.getenv("HF_TOKEN"),
                 quantization_config=bnb_config,
                 device_map=device,
-                torch_dtype=torch.float16,
+                torch_dtype=torch.bfloat16,
             )
             run_async_function(args, tokenizer, model, embedding_model, device)
         else:
