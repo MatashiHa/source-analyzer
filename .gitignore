@@ -1,5 +1,6 @@
+.pdm.lock
+pyproject.toml
 *.env
 *.vscode
 *__pycache__
-
 

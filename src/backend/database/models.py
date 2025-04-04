@@ -16,12 +16,14 @@ from .database import Base
 #     last_updated: Mapped[str] = mapped_column()
 
 
-# class User(Base):
-#     __tablename__ = "user"
-#     user_id: Mapped[int] = mapped_column(primary_key=True)
-#     name: Mapped[str] = mapped_column()
-# email: Mapped[str] = mapped_column()
-# provider: Mapped[str] = mapped_column()
+class User(Base):
+    __tablename__ = "user"
+    user_id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+
+
+email: Mapped[str] = mapped_column()
+provider: Mapped[str] = mapped_column()
 
 
 # у RSS-фида есть набор статей

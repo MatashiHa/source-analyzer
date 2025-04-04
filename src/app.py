@@ -15,7 +15,7 @@ from transformers import (
 )
 
 from crawler.rss_crawler import import_data
-from processor import process
+from rag.processor import process
 
 load_dotenv(override=True)
 logging.set_verbosity_error()

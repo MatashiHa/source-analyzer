@@ -2,7 +2,7 @@ from sqlalchemy import and_, or_, select, text
 
 from backend.database.database import async_session_maker
 from backend.database.models import Articles, LLMConnection
-from rag import rag_processing
+from rag.rag import rag_processing
 from utils import remove_json_markdown
 
 
