@@ -1,6 +1,7 @@
-# import os
-# import sys
-# sys.path.insert(1, os.path.join(sys.path[0], '..'))
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 
 from fastapi import FastAPI
@@ -17,7 +18,11 @@ app.add_middleware(
     allow_headers=["*"],  # Разрешаем все заголовки
 )
 
+
+# uvicorn backend.app:app
+@app.get("/")
+async def hello():
+    return "hello world"
+
+
 # app.include_router(users_router)
-# app.include_router(groups_router)
-# app.include_router(members_router)
-# app.include_router(compositions_router)

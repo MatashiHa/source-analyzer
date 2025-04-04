@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
 
 from backend.database.database import async_session_maker
-from backend.database.models import Articles
+from backend.database.models import Article
 from utils import filter_on_publication_date, parse_html, parse_time
 
 from .processor import get_embeddings
@@ -121,7 +121,7 @@ class RSSCrawler:
         for _, row in df.iterrows():  # Итерируемся по строкам DataFrame
             entry = row.to_dict()  # Преобразуем строку в словарь
             stmt = (
-                insert(Articles)
+                insert(Article)
                 .values(**entry)  # Теперь entry — это словарь
                 .on_conflict_do_update(
                     index_elements=["article_id"],  # Уникальный ключ для проверки

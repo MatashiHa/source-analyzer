@@ -13,7 +13,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from backend.database.models import Articles  # noqa
+from backend.database.models import Article  # noqa
 from utils import get_conn_string
 
 # this is the Alembic Config object, which provides

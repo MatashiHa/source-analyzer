@@ -6,7 +6,7 @@ from sqlalchemy import select
 from transformers import pipeline
 
 from backend.database.database import async_session_maker
-from backend.database.models import Articles, LLMConnection
+from backend.database.models import Article, LLMConnection
 from crawler.processor import get_embeddings
 
 torch.random.manual_seed(0)
@@ -57,64 +57,8 @@ context = [
     }
     """,
     },
-    # {
-    #     "role": "system",
-    #     "content": """Вы — ИИ, который возвращает ТОЛЬКО JSON-ответы. Если вы выдадите что-либо кроме JSON, это будет ОШИБКОЙ. Следуйте этим правилам:
-    #     - Выводите только корректный JSON.
-    #     - JSON должен содержать:
-    #     - predicted_class: уровень ("high", "medium" или "low") с наивысшей вероятностью среди всех уровней.
-    #     - class_to_words: соответствие каждого уровня ("high", "medium", "low") со списком слов или фраз из текста.
-    #     - class_to_probabilities: соответствие каждого уровня ("high", "medium", "low") с его вероятностью.
-    #     - Классифицируйте только слова/фразы, которые значимо влияют на категорию.
-    #     - Используйте исходный язык без переосмысления.
-    #     - Одно слово/фраза может принадлежать только одному классу. Не повторяйте одни и те же слова.
-    #     - Не упоминайте и не классифицируйте предоставленный контекст.
-    #     - Если дан контекст с похожими результатами, используйте его; иначе отвечайте без него.
-    #     Держите ответ лаконичным.""",
-    # },
-    # {
-    #     "role": "user",
-    #     "content": """Context:
-    #         <title>: Позитивный настрой на день;
-    #         <description>: Отличное начало дня с солнечным настроем и позитивными мыслями, которые помогут настроиться на успех.;
-    #         <category>: позитивность;
-    #         <result>: {
-    #         "predicted_class": "high",
-    #         "class_to_words": {
-    #             "high": ["отличное", "позитивными", "успех"],
-    #             "medium": ["начало", "солнечным"],
-    #             "low": ["не"]
-    #         },
-    #         "class_to_probabilities": {
-    #             "high": 0.6,
-    #             "medium": 0.3,
-    #             "low": 0.1
-    #         }
-    #     }
-    #     Category: позитивность
-    #     Text: погода сегодня хорошая, но я слишком устал.""",
-    # },
-    # {
-    #     "role": "assistant",
-    #     "content": """
-    #     {
-    #     "predicted_class": "low",
-    #     "class_to_words": {
-    #         "high": ["хорошая"],
-    #         "medium": ["сегодня"],
-    #         "low": ["слишком устал", "но"]
-    #     },
-    #     "class_to_probabilities": {
-    #         "high": 0.25,
-    #         "medium": 0.25,
-    #         "low": 0.5
-    #     }
-    #     }""",
-    # },
 ]
 
-
-# Context: {context}
 template = """
     Context: {context}
     Category: {category}
@@ -154,14 +98,14 @@ async def rag_processing(
     async with async_session_maker() as session:
         stmt = (
             select(
-                Articles.title,
-                Articles.description,
+                Article.title,
+                Article.description,
                 LLMConnection.category,
                 LLMConnection.response,
             )
             .join(LLMConnection)
             .where(~LLMConnection.is_annotating)
-            .order_by(Articles.embeddings.cosine_distance(query_embedding))
+            .order_by(Article.embeddings.cosine_distance(query_embedding))
             .limit(5)
         )
 
