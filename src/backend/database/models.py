@@ -73,7 +73,6 @@ class Feed(Base):
 class Article(Base):
     __tablename__ = "articles"
     article_id: Mapped[int] = mapped_column(primary_key=True)
-    # feed_id: Mapped[int] = mapped_column(ForeignKey("feeds.id"))
     title: Mapped[str] = mapped_column(String(200))
     link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
@@ -81,7 +80,7 @@ class Article(Base):
     # content: Mapped[str | None] = mapped_column() не используем из-за отсутствия на сайтах и из-за собственных полей у сайтов, например <rbc_news:full-text>
     embeddings = mapped_column(Vector(768))
 
-    feed_id: Mapped[int | None] = mapped_column(
+    feed_id: Mapped[int] = mapped_column(
         ForeignKey("feeds.feed_id", ondelete="CASCADE")
     )
     # Связь один-ко-многим с LLMConnection
