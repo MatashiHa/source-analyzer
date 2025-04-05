@@ -48,169 +48,101 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome back</CardTitle>
-                <CardDescription>Login to your account to continue</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {error && (
-                  <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    {error}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-3">
-                  <Button
-                    variant="outline"
-                    className="bg-white text-black hover:bg-gray-50"
-                    onClick={() => handleSocialLogin("Google")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                      <path
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        fill="#EA4335"
-                      />
-                    </svg>
-                    <div className="text-black">
-                      Continue with Google
-                    </div>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90"
-                    onClick={() => handleSocialLogin("Yandex")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12Z"
-                        fill="#FC3F1D"
-                      />
-                      <path d="M13.155 6.947H11.31V17.052H13.155V6.947Z" fill="white" />
-                    </svg>
-                    Continue with Yandex
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="bg-[#0077FF] text-white hover:bg-[#0077FF]/90"
-                    onClick={() => handleSocialLogin("VK")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M21.5793 15.2071C21.5793 15.2071 23.3193 16.9271 23.7593 17.7671C23.7719 17.7864 23.7793 17.8084 23.7809 17.8312C23.9409 18.1971 23.9909 18.4871 23.8909 18.7071C23.7209 19.0871 23.1109 19.2571 22.9309 19.2671H19.5009C19.2709 19.2671 18.7793 19.1971 18.1709 18.7771C17.6993 18.4471 17.2309 17.9071 16.7793 17.3771C16.0909 16.5671 15.5093 15.8971 14.9209 15.8971C14.8192 15.8966 14.7183 15.9147 14.6227 15.9505C14.1909 16.0971 13.6393 16.7171 13.6393 18.3371C13.6393 18.8171 13.2693 19.2671 12.7209 19.2671H11.2409C10.7309 19.2671 8.1709 19.0971 5.8709 16.6671C3.0509 13.6971 0.470902 7.5271 0.430902 7.4271C0.250902 6.9971 0.650902 6.7671 1.0809 6.7671H4.5409C4.9709 6.7671 5.1309 7.0271 5.2409 7.2671C5.3709 7.5471 5.7709 8.5571 6.3909 9.6971C7.4109 11.6071 8.0509 12.3971 8.5709 12.3971C8.7209 12.3958 8.8663 12.3485 8.9909 12.2601C9.6509 11.8771 9.5109 9.3371 9.4709 8.7671C9.4709 8.6171 9.4709 7.1171 8.8709 6.5371C8.4309 6.1171 7.7409 5.9871 7.3509 5.9371C7.4444 5.8221 7.5608 5.7292 7.6909 5.6571C8.1609 5.3971 8.9609 5.3571 9.7509 5.3571H10.3509C11.2009 5.3671 11.4509 5.4271 11.7909 5.5071C12.4709 5.6571 12.4909 6.3471 12.4309 8.0471C12.4109 8.5671 12.3909 9.1571 12.3909 9.8571C12.3909 10.0071 12.3809 10.1771 12.3809 10.3471C12.3609 11.1171 12.3309 11.9971 12.8309 12.2871C12.9353 12.3518 13.0563 12.3842 13.1793 12.3801C13.4793 12.3801 14.1093 12.3801 15.5693 9.7371C16.1893 8.5971 16.6793 7.2971 16.7193 7.1771C16.7593 7.0971 16.8593 6.9171 16.9793 6.8371C17.0609 6.7932 17.1529 6.7694 17.2459 6.7671H21.2459C21.7359 6.7671 22.0559 6.8371 22.1159 7.0171C22.2159 7.2971 22.1159 8.0471 20.5309 10.2171C20.2509 10.5971 19.9993 10.9271 19.7793 11.2171C18.3293 13.1171 18.3293 13.2171 19.8509 14.6371L19.8593 14.6471L19.8693 14.6571C20.3793 15.1171 20.9793 15.6571 21.5793 15.2071Z"
-                        fill="white"
-                      />
-                    </svg>
-                    Continue with VK
-                  </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome!</CardTitle>
+              <CardDescription>Login to your account to continue</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && (
+                <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
 
-          <TabsContent value="register">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create an account</CardTitle>
-                <CardDescription>Sign up with your preferred provider</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {error && (
-                  <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    {error}
+              <div className="grid grid-cols-1 gap-3">
+                <Button
+                  variant="outline"
+                  className="bg-white text-black hover:bg-gray-50 hover:dark:text-black dark:bg-white/80 hover:dark:bg-white/70"
+                  onClick={() => handleSocialLogin("Google")}
+                  disabled={isLoading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                    Continue with Google
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90 hover:dark:text-black dark:bg-[#FFCC00]/80 hover:dark:bg-[#FFCC00]/70"
+                  onClick={() => handleSocialLogin("Yandex")}
+                  disabled={isLoading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 500 500" fill="none">
+                    <path 
+                      d="M278.55 309.727l-78.522 176.272h-57.23l86.249-188.49c-40.52-20.576-67.563-57.86-67.563-126.77 c-0.089-96.492 61.095-144.738 133.777-144.738h73.942v459.998h-49.504V309.727H278.55L278.55 309.727z M319.699 67.779h-26.416 c-39.891 0-78.522 26.413-78.522 102.96c0 73.94 35.398 97.748 78.522 97.748h26.416V67.779z"
+                      fill="red"
+                    />
+                  </svg>
+                  Continue with Yandex
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="bg-[#0077FF] text-white hover:bg-[#0077FF]/90 hover:text-white dark:bg-[#0077FF]/80 hover:dark:bg-[#0077FF]/70"
+                  onClick={() => handleSocialLogin("VK")}
+                  disabled={isLoading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 100 100" fill="none">
+                    <g clip-path="url(#clip0_2_40)">
+                      <path d="M0.5 48C0.5 25.3726 0.5 14.0589 7.52944 7.02944C14.5589 0 25.8726 0 48.5 0H52.5C75.1274 0 86.4411 0 93.4706 7.02944C100.5 14.0589 100.5 25.3726 100.5 48V52C100.5 74.6274 100.5 85.9411 93.4706 92.9706C86.4411 100 75.1274 100 52.5 100H48.5C25.8726 100 14.5589 100 7.52944 92.9706C0.5 85.9411 0.5 74.6274 0.5 52V48Z" fill="#0077FF"/>
+                      <path d="M53.7085 72.042C30.9168 72.042 17.9169 56.417 17.3752 30.417H28.7919C29.1669 49.5003 37.5834 57.5836 44.25 59.2503V30.417H55.0004V46.8752C61.5837 46.1669 68.4995 38.667 70.8329 30.417H81.5832C79.7915 40.5837 72.2915 48.0836 66.9582 51.1669C72.2915 53.6669 80.8336 60.2086 84.0836 72.042H72.2499C69.7082 64.1253 63.3754 58.0003 55.0004 57.1669V72.042H53.7085Z" fill="white"/>
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_2_40">
+                      <rect width="100" height="100" fill="white" transform="translate(0.5)"/>
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  
+                  Continue with VK
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-[#24292E] text-white hover:bg-[#24292E]/90 dark:hover:bg-[#24292E]/80"
+                  onClick={() => handleSocialLogin("GitHub")}
+                  disabled={isLoading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                      fill="white"
+                    />
+                  </svg>
+                  <div className="text-white">
+                    Continue with GitHub
                   </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-3">
-                  <Button
-                    variant="outline"
-                    className="bg-white hover:bg-gray-50"
-                    onClick={() => handleSocialLogin("Google")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                      <path
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        fill="#EA4335"
-                      />
-                    </svg>
-                    Sign up with Google
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90"
-                    onClick={() => handleSocialLogin("Yandex")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12Z"
-                        fill="#FC3F1D"
-                      />
-                      <path d="M13.155 6.947H11.31V17.052H13.155V6.947Z" fill="white" />
-                    </svg>
-                    Sign up with Yandex
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="bg-[#0077FF] text-white hover:bg-[#0077FF]/90"
-                    onClick={() => handleSocialLogin("VK")}
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M21.5793 15.2071C21.5793 15.2071 23.3193 16.9271 23.7593 17.7671C23.7719 17.7864 23.7793 17.8084 23.7809 17.8312C23.9409 18.1971 23.9909 18.4871 23.8909 18.7071C23.7209 19.0871 23.1109 19.2571 22.9309 19.2671H19.5009C19.2709 19.2671 18.7793 19.1971 18.1709 18.7771C17.6993 18.4471 17.2309 17.9071 16.7793 17.3771C16.0909 16.5671 15.5093 15.8971 14.9209 15.8971C14.8192 15.8966 14.7183 15.9147 14.6227 15.9505C14.1909 16.0971 13.6393 16.7171 13.6393 18.3371C13.6393 18.8171 13.2693 19.2671 12.7209 19.2671H11.2409C10.7309 19.2671 8.1709 19.0971 5.8709 16.6671C3.0509 13.6971 0.470902 7.5271 0.430902 7.4271C0.250902 6.9971 0.650902 6.7671 1.0809 6.7671H4.5409C4.9709 6.7671 5.1309 7.0271 5.2409 7.2671C5.3709 7.5471 5.7709 8.5571 6.3909 9.6971C7.4109 11.6071 8.0509 12.3971 8.5709 12.3971C8.7209 12.3958 8.8663 12.3485 8.9909 12.2601C9.6509 11.8771 9.5109 9.3371 9.4709 8.7671C9.4709 8.6171 9.4709 7.1171 8.8709 6.5371C8.4309 6.1171 7.7409 5.9871 7.3509 5.9371C7.4444 5.8221 7.5608 5.7292 7.6909 5.6571C8.1609 5.3971 8.9609 5.3571 9.7509 5.3571H10.3509C11.2009 5.3671 11.4509 5.4271 11.7909 5.5071C12.4709 5.6571 12.4909 6.3471 12.4309 8.0471C12.4109 8.5671 12.3909 9.1571 12.3909 9.8571C12.3909 10.0071 12.3809 10.1771 12.3809 10.3471C12.3609 11.1171 12.3309 11.9971 12.8309 12.2871C12.9353 12.3518 13.0563 12.3842 13.1793 12.3801C13.4793 12.3801 14.1093 12.3801 15.5693 9.7371C16.1893 8.5971 16.6793 7.2971 16.7193 7.1771C16.7593 7.0971 16.8593 6.9171 16.9793 6.8371C17.0609 6.7932 17.1529 6.7694 17.2459 6.7671H21.2459C21.7359 6.7671 22.0559 6.8371 22.1159 7.0171C22.2159 7.2971 22.1159 8.0471 20.5309 10.2171C20.2509 10.5971 19.9993 10.9271 19.7793 11.2171C18.3293 13.1171 18.3293 13.2171 19.8509 14.6371L19.8593 14.6471L19.8693 14.6571C20.3793 15.1171 20.9793 15.6571 21.5793 15.2071Z"
-                        fill="white"
-                      />
-                    </svg>
-                    Sign up with VK
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         <p className="mt-4 text-center text-sm text-muted-foreground">
           By continuing, you agree to SourceAnalyzer's Terms of Service and Privacy Policy.
         </p>
