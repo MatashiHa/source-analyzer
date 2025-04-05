@@ -25,16 +25,13 @@ class User(Base):
 
     # Основные поля
     user_id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(100), unique=True)
-    name: Mapped[str] = mapped_column(String(100))
+    email: Mapped[str | None] = mapped_column(String(100))  # не все предоставлют email
+    login: Mapped[str] = mapped_column(String(100))
     # OAuth2-поля (пока один провайдер на пользователя)
     provider: Mapped[str] = mapped_column(String(50))  # google, github и т.д.
     provider_id: Mapped[str] = mapped_column(
         String(255), unique=True
     )  # ID у провайдера
-    # Статусы
-    # is_active: Mapped[bool] = mapped_column(default=True) удобно для контроля без удаления данных пользователя
-    is_verified: Mapped[bool] = mapped_column(default=True)  # Доверяем OAuth-провайдеру
 
     # Связь многие-ко-многим с Feed (через ассоциативную таблицу)
     feeds: Mapped[list["Feed"]] = relationship(

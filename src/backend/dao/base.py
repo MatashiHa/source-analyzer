@@ -1,7 +1,6 @@
 # DAO (Data Access Object)
 
 from database.database import async_session_maker
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 
@@ -73,13 +72,13 @@ class BaseDAO:
             session.add(new_instance)
             try:
                 await session.commit()
-            except SQLAlchemyError as e:
+            except Exception as e:
                 await session.rollback()
                 raise ValueError(f"Add failed: {str(e)}")
             return new_instance
 
     @classmethod
-    async def update_model(
+    async def update(
         cls, instance: any, partial: bool = True, **update_values: any
     ) -> any:
         """
@@ -166,6 +165,6 @@ class BaseDAO:
             await session.delete(instance)
             try:
                 await session.commit()
-            except SQLAlchemyError as e:
+            except Exception as e:
                 await session.rollback()
                 raise ValueError(f"Delete failed: {str(e)}")

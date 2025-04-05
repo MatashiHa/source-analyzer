@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { redirect, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertCircle, FileText } from "lucide-react"
+import axios from "axios"
 
 export default function AuthPage() {
   const router = useRouter()
@@ -15,17 +16,34 @@ export default function AuthPage() {
   const handleSocialLogin = async (provider: string) => {
     setIsLoading(true)
     setError("")
-
+    
     try {
-      // In a real app, this would initiate OAuth flow with the provider
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      router.push("/")
+
+      //получаем URL редиректа
+      axios.get("http://localhost:8000/auth/github")
+        .then(response => redirect(response.data.url))
+      // await new Promise((resolve) => setTimeout(resolve, 1000))
     } catch (err) {
       setError(`Failed to login with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }
   }
+
+  // После возврата с провайдера обрабатываем callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    
+    if (code) {
+      // Отправляем код на бэкенд для получения токена
+      axios.get(`http://localhost:8000/auth/github/callback?code=${code}`)
+        .then(response => {
+          console.log("User data:", response.data.user);
+          localStorage.setItem("token", response.data.token.access_token);
+        });
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 py-12 px-4 sm:px-6 lg:px-8">
@@ -75,7 +93,9 @@ export default function AuthPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Continue with Google
+                    <div className="text-black">
+                      Continue with Google
+                    </div>
                   </Button>
 
                   <Button

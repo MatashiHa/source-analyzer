@@ -17,7 +17,8 @@ from transformers import (
 from crawler.rss_crawler import import_data
 from rag.processor import process
 
-load_dotenv(override=True)
+# override=True if needed
+load_dotenv()
 logging.set_verbosity_error()
 # Получаем текущую рабочую директорию (PWD) и добавляем /src
 project_src_path = os.path.join(os.getcwd(), "src")
