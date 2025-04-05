@@ -100,3 +100,13 @@ class LLMConnection(Base):
         ForeignKey("articles.article_id", ondelete="CASCADE")
     )
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
+
+
+# Храниим сессии пользователей
+class Session(Base):
+    __tablename__ = "sessions"
+    session_id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id", ondelete="CASCADE")
+    )
+    expires_at: Mapped[datetime.datetime] = mapped_column()
