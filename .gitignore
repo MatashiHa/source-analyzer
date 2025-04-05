@@ -3,4 +3,5 @@ pyproject.toml
 *.env
 *.vscode
 *__pycache__
-
+*.next
+*node_modules

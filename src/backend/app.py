@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-# app.mount("/frontend", StaticFiles(directory="src/frontend"), name="frontend")
+# app.mount("/", StaticFiles(directory="src/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 
-# uvicorn backend.app:app
+# uvicorn backend.app:app --reload
 @app.get("/")
 async def hello():
     return "hello world"
