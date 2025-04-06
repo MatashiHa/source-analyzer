@@ -12,7 +12,7 @@ class SessionsDAO(BaseDAO):
 
     @classmethod
     async def is_session_valid(cls, session_id: str):
-        with async_session_maker() as session:
+        async with async_session_maker() as session:
             query = select(cls.model).filter(
                 and_(
                     Session.session_id == session_id,

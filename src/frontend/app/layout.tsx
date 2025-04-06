@@ -16,12 +16,12 @@ export const metadata: Metadata = {
   description: "Source analysis and monitoring system",
     generator: 'v0.dev'
 }
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -38,9 +38,7 @@ export default function RootLayout({
                   </div>
                   <div className="flex flex-1 items-center justify-end space-x-2">
                     <div className="flex items-center gap-2">
-                      <Link href="/auth" className="text-sm font-medium mr-2">
-                        Login
-                      </Link>
+                      <AuthButtons />
                       <LanguageSwitcher />
                       <ThemeToggle />
                     </div>
@@ -59,3 +57,5 @@ export default function RootLayout({
 
 
 import './globals.css'
+import { AuthButtons } from "@/components/auth-buttons"
+

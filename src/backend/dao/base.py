@@ -1,6 +1,7 @@
 # DAO (Data Access Object)
 
 from database.database import async_session_maker
+from sqlalchemy import delete
 from sqlalchemy.future import select
 
 
@@ -36,8 +37,8 @@ class BaseDAO:
             Экземпляр модели или None, если ничего не найдено
         """
         async with async_session_maker() as session:
-            query = select(cls.model).filter_by(**filter_by)
-            result = await session.execute(query)
+            stmt = select(cls.model).filter_by(**filter_by)
+            result = await session.execute(stmt)
             return result.scalar_one_or_none()
 
     @classmethod
@@ -149,7 +150,7 @@ class BaseDAO:
     #     return instance
 
     @classmethod
-    async def delete(cls, **values):
+    async def delete(cls, **filters):
         """
         Асинхронно удаляет экземпляр модели с указанными значениями.
 
@@ -160,10 +161,9 @@ class BaseDAO:
             ничего
         """
         async with async_session_maker() as session:
-            # async with session.begin():
-            instance = cls.model(**values)
-            await session.delete(instance)
+            stmt = delete(cls.model).filter_by(**filters)
             try:
+                await session.execute(stmt)
                 await session.commit()
             except Exception as e:
                 await session.rollback()

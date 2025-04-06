@@ -1,10 +1,11 @@
 import os
 import secrets
+from datetime import datetime, timedelta
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from backend.session_dao import SessionsDAO
 from backend.user_dao import UsersDAO
@@ -21,11 +22,11 @@ async def get_current_user(request: Request):
     if not session_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    session = SessionsDAO().is_session_valid(session_id=session_id)
+    session = await SessionsDAO().is_session_valid(session_id=session_id)
     if not session:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
 
-    user = UsersDAO().find_one(user_id=session["user_id"])
+    user = await UsersDAO().find_one_or_none(user_id=session.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -76,4 +77,43 @@ async def auth_github_callback(code: str):
     if not user:
         await UsersDAO.add(**user_record)
 
-    return RedirectResponse(url="http://localhost:3000/")
+    session_id = generate_session_id()
+    await SessionsDAO.add(
+        session_id=session_id,
+        user_id=user.user_id,
+        expires_at=datetime.now() + timedelta(days=1),  # сессия на 1 день
+    )
+    response = RedirectResponse(url="http://localhost:3000/")
+
+    response.set_cookie(
+        key="session_id", value=session_id, max_age=86400, secure=True, samesite="lax"
+    )
+    return response
+
+
+@router.post("/logout")
+async def logout(request: Request, response: Response):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        await SessionsDAO.delete(session_id=session_id)
+    # response = RedirectResponse(url="http://localhost:3000/auth/", status_code=303)
+    response.delete_cookie("session_id")
+    return {"redirect_url": "http://localhost:3000/auth/"}
+
+
+@router.get("/check-auth")
+async def check_auth(request: Request):
+    if request.url.path == "/auth":
+        return {"status": "public"}
+
+    try:
+        user = await get_current_user(request)
+        return {"user": user.login}
+    except HTTPException as e:
+        if e.status_code == 401:
+            response = JSONResponse(
+                status_code=401, content={"detail": "Not authenticated"}
+            )
+            response.headers["X-Redirect-Url"] = "http://localhost:3000/auth"
+            return response
+        raise

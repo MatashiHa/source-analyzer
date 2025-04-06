@@ -105,7 +105,7 @@ class LLMConnection(Base):
 # Храниим сессии пользователей
 class Session(Base):
     __tablename__ = "sessions"
-    session_id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.user_id", ondelete="CASCADE")
     )

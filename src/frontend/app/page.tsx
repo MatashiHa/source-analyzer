@@ -9,7 +9,6 @@ import { useLanguage } from "@/components/language-provider"
 
 function Dashboard() {
   const { t } = useLanguage()
-
   return (
     <div className="flex flex-col">
       <header className="border-b bg-background/95 backdrop-blur px-8">
