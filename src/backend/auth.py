@@ -33,6 +33,49 @@ async def get_current_user(request: Request):
     return user
 
 
+async def get_user_info(code: str, provider: str):
+    async with httpx.AsyncClient() as client:
+        if provider == "github":
+            response = await client.post(
+                "https://github.com/login/oauth/access_token",
+                data={
+                    "client_id": os.getenv(f"{provider.upper()}_CLIENT_ID"),
+                    "client_secret": os.getenv(f"{provider.upper()}_CLIENT_SECRET"),
+                    "code": code,
+                    "redirect_uri": os.getenv(f"{provider.upper()}_REDIRECT_URI"),
+                },
+                headers={"Accept": "application/json"},
+            )
+        else:
+            return {"error": "Invalid provider"}
+        # Обмен кода на токен
+        token_data = response.json()
+        access_token = token_data.get("access_token")
+        # Получение данных пользователя
+        user_info = (
+            await client.get(
+                "https://api.github.com/user",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+        ).json()
+
+        emails = (
+            await client.get(
+                "https://api.github.com/user/emails",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+        ).json()
+
+        # Поиск первичного email
+        primary_email = next(
+            (email["email"] for email in emails if email["primary"]), None
+        )
+
+        # Добавление email к информации о пользователе
+        user_info["email"] = primary_email
+        return user_info
+
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 scope = "user:email"  # требуем от провайдера email
 
@@ -46,34 +89,14 @@ async def login_github():
 
 @router.get("/github/callback")
 async def auth_github_callback(code: str):
-    async with httpx.AsyncClient() as client:
-        # Обмен кода на токен
-        response = await client.post(
-            "https://github.com/login/oauth/access_token",
-            data={
-                "client_id": os.getenv("GITHUB_CLIENT_ID"),
-                "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-                "code": code,
-                "redirect_uri": os.getenv("GITHUB_REDIRECT_URI"),
-            },
-            headers={"Accept": "application/json"},
-        )
-        token_data = response.json()
-
-        # Получение данных пользователя
-        userinfo = await client.get(
-            "https://api.github.com/user",
-            headers={"Authorization": f"Bearer {token_data['access_token']}"},
-        )
-        userinfo = userinfo.json()
-        # return {"user": user, "token": token_data}
+    user_info = await get_user_info(code, "github")
     user_record = {
-        "login": userinfo["login"],
+        "login": user_info["login"],
         "provider": "github",
-        "provider_id": str(userinfo["id"]),
-        "email": userinfo["email"],
+        "provider_id": str(user_info["id"]),
+        "email": user_info["email"],
     }
-    user = await UsersDAO.find_one_or_none(provider_id=user_record["provider_id"])
+    user = await UsersDAO().find_one_or_none(provider_id=user_record["provider_id"])
     if not user:
         await UsersDAO.add(**user_record)
 
@@ -96,7 +119,6 @@ async def logout(request: Request, response: Response):
     session_id = request.cookies.get("session_id")
     if session_id:
         await SessionsDAO.delete(session_id=session_id)
-    # response = RedirectResponse(url="http://localhost:3000/auth/", status_code=303)
     response.delete_cookie("session_id")
     return {"redirect_url": "http://localhost:3000/auth/"}
 
