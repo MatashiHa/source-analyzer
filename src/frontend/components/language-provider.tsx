@@ -248,8 +248,8 @@ const translations: Translations = {
     ru: "Новый анализ",
   },
   "dashboard.scheduleMonitoring": {
-    en: "Schedule Monitoring",
-    ru: "Запланировать мониторинг",
+    en: "Shedule Monitoring",
+    ru: "Mониторинг по расписанию",
   },
   "dashboard.createTemplate": {
     en: "Create Template",
@@ -262,8 +262,8 @@ const translations: Translations = {
 
   // Monitoring
   "monitoring.title": {
-    en: "Schedule Monitoring",
-    ru: "Мониторинг по расписанию",
+    en: "Monitoring",
+    ru: "Мониторинг",
   },
   "monitoring.subtitle": {
     en: "Set up and manage automated source monitoring schedules",

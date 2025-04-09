@@ -316,7 +316,7 @@ export default function MonitoringPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>{t("common.alerts")}</Label>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -326,7 +326,7 @@ export default function MonitoringPage() {
                     </Label>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -409,26 +409,26 @@ export default function MonitoringPage() {
                     <CardDescription className="mt-1">{schedule.description}</CardDescription>
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild className="mt-4">
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/monitoring/${schedule.id}`)}>
+                      {/* <DropdownMenuItem onClick={() => router.push(`/monitoring/${schedule.id}`)}>
                         <Eye className="mr-2 h-4 w-4" />
                         {t("monitoring.viewDetails")}
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                       <DropdownMenuItem>
                         <Edit className="mr-2 h-4 w-4" />
                         {t("common.edit")} {t("common.schedule")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      {/* <DropdownMenuItem>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         {t("common.run")} {t("common.now")}
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                       <DropdownMenuSeparator />
-                      {schedule.status === "active" ? (
+                      {/* {schedule.status === "active" ? (
                         <DropdownMenuItem>
                           <Pause className="mr-2 h-4 w-4" />
                           {t("common.pause")} {t("common.schedule")}
@@ -438,7 +438,7 @@ export default function MonitoringPage() {
                           <Play className="mr-2 h-4 w-4" />
                           {t("common.resume")} {t("common.schedule")}
                         </DropdownMenuItem>
-                      )}
+                      )} */}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
@@ -478,7 +478,7 @@ export default function MonitoringPage() {
                     </div>
                   </div>
 
-                  {schedule.alerts > 0 && (
+                  {/* {schedule.alerts > 0 && (
                     <div className="flex items-center gap-2 text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 rounded-md p-2">
                       <Bell className="h-4 w-4" />
                       <span>
@@ -486,9 +486,9 @@ export default function MonitoringPage() {
                         {schedule.alerts === 1 ? t("monitoring.alertDetected") : t("monitoring.alertsDetected")}
                       </span>
                     </div>
-                  )}
+                  )} */}
 
-                  <div className="space-y-1">
+                  {/* <div className="space-y-1">
                     <div className="text-xs font-medium text-muted-foreground">{t("common.keywords")}</div>
                     <div className="flex flex-wrap gap-1">
                       {schedule.keywords.slice(0, 3).map((keyword, i) => (
@@ -502,7 +502,7 @@ export default function MonitoringPage() {
                         </Badge>
                       )}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
               <CardFooter className="border-t pt-4 flex justify-between">

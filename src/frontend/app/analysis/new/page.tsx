@@ -74,8 +74,7 @@ export default function NewAnalysisPage() {
                   </div>
                 </RadioGroup>
               </div>
-
-              {analysisType === "monitoring" && (
+              {/* {analysisType === "monitoring" && (
                 <div className="grid gap-3">
                   <Label htmlFor="update-frequency">Update Frequency</Label>
                   <Select defaultValue="daily">
@@ -90,10 +89,17 @@ export default function NewAnalysisPage() {
                     </SelectContent>
                   </Select>
                 </div>
-              )}
-
+              )} */}
               <div className="grid gap-3">
-                <Label htmlFor="classification-template">Classification Template</Label>
+                <CardDescription>Choose classes for analysis from:</CardDescription>
+                <div className="grid gap-3">
+                  <Label htmlFor="analysis-name">Analysis Categories</Label>
+                  <Input id="analysis-name" placeholder="Enter a category or classes separated by comma for analysis" required />
+                </div>
+
+                <CardDescription>or...</CardDescription>
+
+                <Label htmlFor="classification-template">Classification Templates</Label>
                 <Select defaultValue="default">
                   <SelectTrigger id="classification-template">
                     <SelectValue placeholder="Select template" />
@@ -106,6 +112,11 @@ export default function NewAnalysisPage() {
                     <SelectItem value="custom">Custom Template</SelectItem>
                   </SelectContent>
                 </Select>
+                <CardDescription>To make analysis more efficient give it some context!</CardDescription>
+                <div className="grid gap-3">
+                  <Label htmlFor="analysis-name">Examples (optional)</Label>
+                  <Input id="analysis-name" placeholder="<Text>: The weather is good tonight! <Prediction>: Positive;" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -145,7 +156,7 @@ export default function NewAnalysisPage() {
                       <Label>Upload Documents</Label>
                       <FileUploader />
                       <p className="text-xs text-muted-foreground">
-                        Supported formats: .txt, .docx, .pdf (Max 50MB per file)
+                        Supported formats: .txt, .docx, .pdf (Max 10MB per file)
                       </p>
                     </div>
                   ) : (
@@ -207,7 +218,7 @@ export default function NewAnalysisPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Analysis Options</CardTitle>
               <CardDescription>Configure visualization and output preferences</CardDescription>
@@ -273,7 +284,7 @@ export default function NewAnalysisPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           <div className="flex justify-end gap-4">
             <Button variant="outline" type="button" onClick={() => router.push("/")}>

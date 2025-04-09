@@ -74,7 +74,6 @@ class Article(Base):
     link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
     description: Mapped[str | None] = mapped_column(String(600))
-    # content: Mapped[str | None] = mapped_column() не используем из-за отсутствия на сайтах и из-за собственных полей у сайтов, например <rbc_news:full-text>
     embeddings = mapped_column(Vector(768))
 
     feed_id: Mapped[int] = mapped_column(
@@ -99,7 +98,12 @@ class LLMConnection(Base):
     article_id: Mapped[int | None] = mapped_column(
         ForeignKey("articles.article_id", ondelete="CASCADE")
     )
+    title: Mapped[str] = mapped_column()
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
+
+
+# class Template(Base): # затравка на будущее
+#     pass
 
 
 # Храниим сессии пользователей

@@ -9,7 +9,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreHorizontal, ArrowUpDown, ExternalLink } from "lucide-react"
 
-type Source = {
+// Define the Source type
+interface Source {
   id: string
   title: string
   type: string
@@ -18,6 +19,7 @@ type Source = {
   classification: string[]
 }
 
+// Update the sources array to include more explicit impact level percentages
 const sources: Source[] = [
   {
     id: "1",
@@ -77,8 +79,12 @@ const sources: Source[] = [
   },
 ]
 
+// Replace the SourceTable function with this updated version
 export function SourceTable() {
   const [selectedSources, setSelectedSources] = useState<string[]>([])
+  const [sortField, setSortField] = useState<"relevance" | "date">("relevance")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+  const [searchQuery, setSearchQuery] = useState("")
 
   const toggleSource = (id: string) => {
     setSelectedSources((prev) => (prev.includes(id) ? prev.filter((sourceId) => sourceId !== id) : [...prev, id]))
@@ -88,81 +94,126 @@ export function SourceTable() {
     setSelectedSources(selectedSources.length === sources.length ? [] : sources.map((source) => source.id))
   }
 
+  const toggleSort = (field: "relevance" | "date") => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("desc")
+    }
+  }
+
+  // Filter sources based on search query
+  const filteredSources = sources.filter((source) => {
+    if (!searchQuery) return true
+    return (
+      source.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      source.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      source.classification.some((cls) => cls.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+  })
+
+  // Sort sources based on sort field and direction
+  const sortedSources = [...filteredSources].sort((a, b) => {
+    if (sortField === "relevance") {
+      return sortDirection === "asc" ? a.relevance - b.relevance : b.relevance - a.relevance
+    } else {
+      // Sort by date
+      return sortDirection === "asc"
+        ? new Date(a.date).getTime() - new Date(b.date).getTime()
+        : new Date(b.date).getTime() - new Date(a.date).getTime()
+    }
+  })
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input placeholder="Search sources..." className="h-9" type="search" />
+          <Input
+            placeholder="Search sources..."
+            className="h-9"
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <Button size="sm" variant="ghost" className="h-9 px-2">
             <Search className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={selectedSources.length === 0}>
             Export Selected
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px]">
+              {/* <TableHead>
                 <Checkbox
-                  checked={selectedSources.length === sources.length && sources.length > 0}
+                  checked={selectedSources.length === filteredSources.length && filteredSources.length > 0}
                   onCheckedChange={toggleAll}
                 />
-              </TableHead>
+              </TableHead> */}
               <TableHead>
                 <div className="flex items-center space-x-1">
                   <span>Source</span>
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Date</TableHead>
+              {/* <TableHead>Type</TableHead> */}
               <TableHead>
-                <div className="flex items-center space-x-1">
-                  <span>Relevance</span>
+                <div className="flex items-center space-x-1 cursor-pointer" onClick={() => toggleSort("date")}>
+                  <span>Date</span>
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </TableHead>
-              <TableHead>Classification</TableHead>
+              <TableHead>
+                <div className="flex items-center space-x-1 cursor-pointer" onClick={() => toggleSort("relevance")}>
+                  <span>Impact Level</span>
+                  <ArrowUpDown className={`h-3 w-3 ${sortField === "relevance" ? "text-primary" : ""}`} />
+                </div>
+              </TableHead>
+              {/* <TableHead>Classification</TableHead> */}
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sources.map((source) => (
+            {sortedSources.map((source) => (
               <TableRow key={source.id}>
-                <TableCell>
+                {/* <TableCell>
                   <Checkbox
                     checked={selectedSources.includes(source.id)}
                     onCheckedChange={() => toggleSource(source.id)}
                   />
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <div className="font-medium">{source.title}</div>
                 </TableCell>
-                <TableCell>{source.type}</TableCell>
+                {/* <TableCell>{source.type}</TableCell> */}
                 <TableCell>{new Date(source.date).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div className="w-10 text-right">{source.relevance}%</div>
                     <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${source.relevance}%` }} />
+                      <div
+                        className={`h-full ${source.relevance >= 85 ? "bg-green-500" : source.relevance >= 75 ? "bg-blue-500" : "bg-primary"}`}
+                        style={{ width: `${source.relevance}%` }}
+                      />
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {source.classification.map((cls, i) => (
-                      <Badge key={i} variant="outline">
+                      <Badge key={i} variant={cls.includes("High Impact") ? "default" : "outline"}>
                         {cls}
                       </Badge>
                     ))}
                   </div>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -175,8 +226,8 @@ export function SourceTable() {
                         <ExternalLink className="mr-2 h-4 w-4" />
                         View Source
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit Classification</DropdownMenuItem>
-                      <DropdownMenuItem>Add to Favorites</DropdownMenuItem>
+                      {/* <DropdownMenuItem>Edit Classification</DropdownMenuItem>
+                      <DropdownMenuItem>Add to Favorites</DropdownMenuItem> */}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -185,7 +236,16 @@ export function SourceTable() {
           </TableBody>
         </Table>
       </div>
+
+      <div className="flex justify-between items-center text-sm text-muted-foreground">
+        <div>
+          Showing {sortedSources.length} of {sources.length} sources
+        </div>
+        <div>
+          Sorted by: <span className="font-medium">{sortField === "relevance" ? "Impact Level" : "Date"}</span> (
+          {sortDirection === "desc" ? "highest first" : "lowest first"})
+        </div>
+      </div>
     </div>
   )
 }
-

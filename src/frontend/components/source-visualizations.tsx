@@ -18,6 +18,7 @@ import {
   LineChart,
   Line,
 } from "recharts"
+import { ImpactTimeline } from "./impact-timeline"
 
 const barData = [
   { name: "Scientific", primary: 42, secondary: 18 },
@@ -66,7 +67,7 @@ export function SourceVisualizations() {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Source Distribution by Type</CardTitle>
             <CardDescription>Breakdown of primary and secondary sources by content type</CardDescription>
@@ -88,8 +89,16 @@ export function SourceVisualizations() {
               renderPlaceholder()
             )}
           </CardContent>
+        </Card> */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Impact Level Timeline</CardTitle>
+            <CardDescription>Change in impact levels over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ImpactTimeline />
+          </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Impact Distribution</CardTitle>
@@ -122,7 +131,7 @@ export function SourceVisualizations() {
           </CardContent>
         </Card>
       </div>
-
+      
       <Card>
         <CardHeader>
           <CardTitle>Publication Timeline</CardTitle>
@@ -159,11 +168,11 @@ export function SourceVisualizations() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
-            <TabsList>
+            {/* <TabsList>
               <TabsTrigger value="all">All Sources</TabsTrigger>
               <TabsTrigger value="primary">Primary Sources</TabsTrigger>
               <TabsTrigger value="secondary">Secondary Sources</TabsTrigger>
-            </TabsList>
+            </TabsList> */}
             <TabsContent value="all" className="pt-4">
               <div className="bg-muted/40 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
                 <div className="text-center">
@@ -174,7 +183,7 @@ export function SourceVisualizations() {
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="primary" className="pt-4">
+            {/* <TabsContent value="primary" className="pt-4">
               <div className="bg-muted/40 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
                 <div className="text-center">
                   <p className="text-muted-foreground">Primary sources word cloud</p>
@@ -187,7 +196,7 @@ export function SourceVisualizations() {
                   <p className="text-muted-foreground">Secondary sources word cloud</p>
                 </div>
               </div>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </CardContent>
       </Card>

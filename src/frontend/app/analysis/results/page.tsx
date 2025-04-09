@@ -16,10 +16,10 @@ export default function ResultsPage() {
   const [timeRange, setTimeRange] = useState("all")
 
   return (
-    <div className="flex flex-col items-center py-8">
+    <div className="flex flex-col items-center py-8 mx-8">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Link>
@@ -29,7 +29,7 @@ export default function ResultsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-center">Climate Change Research</h1>
-          <p className="text-muted-foreground mt-1">Analysis completed on July 12, 2023 • 142 sources analyzed</p>
+          <p className="text-muted-foreground mt-1 text-center">Analysis completed on July 12, 2023</p>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export default function ResultsPage() {
             <TabsList>
               <TabsTrigger value="visualizations">Visualizations</TabsTrigger>
               <TabsTrigger value="sources">Sources</TabsTrigger>
-              <TabsTrigger value="classification">Classification</TabsTrigger>
+              {/* <TabsTrigger value="classification">Classification</TabsTrigger> */}
               <TabsTrigger value="markup">Data Markup</TabsTrigger>
             </TabsList>
 
@@ -96,9 +96,9 @@ export default function ResultsPage() {
               <SourceTable />
             </TabsContent>
 
-            <TabsContent value="classification" className="mt-4">
+            {/* <TabsContent value="classification" className="mt-4">
               <SourceClassification />
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="markup" className="mt-4">
               <Card>

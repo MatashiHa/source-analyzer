@@ -20,7 +20,6 @@ export default function AuthPage() {
       //получаем URL редиректа
       axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/${provider}`)
         .then(response => redirect(response.data.url))
-      // await new Promise((resolve) => setTimeout(resolve, 1000))
     } catch (err) {
       setError(`Failed to login with ${provider}. Please try again.`)
     } finally {

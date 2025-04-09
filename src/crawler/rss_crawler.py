@@ -34,7 +34,7 @@ class RSSCrawler:
 
         Returns:
             pd.Dataframe: a Dataframe with title, publication time,
-            link, description and content if exists
+            link and description if exists
         """
         dataframes_per_url: List[pd.DataFrame] = []
 
@@ -133,7 +133,7 @@ class RSSCrawler:
 
     async def run(self, tokenizer, model, device):
         # прнимаем запрос от пользователя с url
-        # эти url парсим, обрабатываем а потом обновляем БД
+        # эти url парсим, обрабатываем, а потом обновляем БД
         df = await self.parse_rss_feeds(self.urls)
         print("data parsed")
 

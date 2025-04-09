@@ -5,13 +5,13 @@ export function SourceSummary() {
         <div className="bg-muted/40 rounded-lg p-4">
           <div className="text-sm font-medium mb-1">Total Sources</div>
           <div className="text-3xl font-bold">142</div>
-          <div className="text-xs text-muted-foreground mt-1">87 primary, 55 secondary</div>
+          {/* <div className="text-xs text-muted-foreground mt-1">87 primary, 55 secondary</div> */}
         </div>
-        <div className="bg-muted/40 rounded-lg p-4">
+        {/* <div className="bg-muted/40 rounded-lg p-4">
           <div className="text-sm font-medium mb-1">Average Relevance</div>
           <div className="text-3xl font-bold">78%</div>
           <div className="text-xs text-muted-foreground mt-1">+5% from previous analysis</div>
-        </div>
+        </div> */}
         <div className="bg-muted/40 rounded-lg p-4">
           <div className="text-sm font-medium mb-1">Date Range</div>
           <div className="text-3xl font-bold">6 months</div>
@@ -20,7 +20,7 @@ export function SourceSummary() {
       </div>
 
       <div className="prose max-w-none">
-        <h3>Key Findings</h3>
+        <h3 className="font-bold">Key Findings</h3>
         <p>
           The analysis of 142 sources on climate change research reveals a significant focus on policy implications and
           economic impacts. Scientific sources constitute the largest category (42%), followed by policy documents (28%)

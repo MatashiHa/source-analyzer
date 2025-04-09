@@ -11,13 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 app = FastAPI()
-# app.mount("/", StaticFiles(directory="src/static"), name="static")
-
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Разрешаем запросы с фронта
-    allow_credentials=True,
+    allow_credentials=True,  # Разрешаем получение клиентской информации(куки и т.д.)
     allow_methods=["*"],  # Разрешаем все методы (GET, POST, PUT, DELETE и т.д.)
     allow_headers=["*"],  # Разрешаем все заголовки
     expose_headers=["X-Redirect-Url"],  # Явно разрешаем кастомный заголовок
