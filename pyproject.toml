@@ -12,6 +12,11 @@ license = {text = "MIT"}
 
 [project.optional-dependencies]  # This is optional dependencies
 mlstuff = ["mlflow>=2.21.0", "transformers>=4.50.0", "torch>=2.6.0", "bitsandbytes>=0.45.4", "accelerate>=1.5.2"]
+dev = [
+    "dagster>=1.6.6",
+    "dagster-webserver>=1.6.6",
+    "label-studio>=1.17.0",
+]
 
 
 [tool.pdm]
