@@ -12,7 +12,7 @@ export function useAuth() {
   // Функция проверки авторизации
   const checkAuth = useCallback(async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-auth`, {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/check`, {
         withCredentials: true
       }).then(response => setIsLogged(true))
     } catch {

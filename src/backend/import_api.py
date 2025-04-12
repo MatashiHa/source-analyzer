@@ -15,3 +15,4 @@ async def import_data():
     import_data(
         urls, tokenizer=tokenizer, embedding_model=embedding_model, device=device
     )
+    return {"message": "Data is loaded!"}

@@ -5,3 +5,5 @@ pyproject.toml
 *__pycache__
 *.next
 *node_modules
+.pdm-python
+.venv

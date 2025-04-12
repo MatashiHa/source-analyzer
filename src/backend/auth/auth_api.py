@@ -123,7 +123,7 @@ async def logout(request: Request, response: Response):
     return {"redirect_url": "http://localhost:3000/auth/"}
 
 
-@router.get("/check-auth")
+@router.get("/check")
 async def check_auth(request: Request):
     if request.url.path == "/auth":
         return {"status": "public"}

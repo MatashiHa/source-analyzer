@@ -2,7 +2,7 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server"
 
 export async function middleware(request: NextRequest) {
-    const response = await fetch('http://localhost:8000/auth/check-auth', {
+    const response = await fetch('http://localhost:8000/auth/check', {
       credentials: 'include',
       headers: request.headers
     })
