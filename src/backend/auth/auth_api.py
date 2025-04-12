@@ -3,11 +3,11 @@ import secrets
 from datetime import datetime, timedelta
 
 import httpx
+from auth.session_dao import SessionsDAO
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from backend.session_dao import SessionsDAO
 from backend.user_dao import UsersDAO
 
 load_dotenv()

@@ -1,7 +1,7 @@
 import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy import Column, ForeignKey, String, Table, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,7 +32,6 @@ class User(Base):
     provider_id: Mapped[str] = mapped_column(
         String(255), unique=True
     )  # ID у провайдера
-
     # Связь многие-ко-многим с Feed (через ассоциативную таблицу)
     feeds: Mapped[list["Feed"]] = relationship(
         "Feed",
@@ -40,6 +39,8 @@ class User(Base):
         back_populates="users",  # Обратная ссылка (будет в Feed)
         lazy="selectin",
     )
+    # у провайдоров могут быть одинаковые ID но сочетание с названием всегда разное
+    UniqueConstraint("provider", "provider_id", name="uix_provider_id_provider")
 
 
 # есть RSS-фиды который задаются пользователями
