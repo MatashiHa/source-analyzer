@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, FileText } from "lucide-react"
 import axios from "axios"
-
-
+import Script from 'next/script'
+import {YandexButton} from "@/components/yandex"
 export default function AuthPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -42,8 +42,11 @@ export default function AuthPage() {
     }
   }, []);
 
+
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 py-12 px-4 sm:px-6 lg:px-8">
+      <Script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"/>
       <div className="w-full max-w-md">
           <Card>
             <CardHeader>
@@ -57,7 +60,6 @@ export default function AuthPage() {
                   {error}
                 </div>
               )}
-
               <div className="grid grid-cols-1 gap-3">
                 <Button
                   variant="outline"
@@ -85,8 +87,7 @@ export default function AuthPage() {
                   </svg>
                     Continue with Google
                 </Button>
-
-                <Button
+                {/* <Button
                   variant="outline"
                   className="bg-[#FFCC00] text-black hover:bg-[#FFCC00]/90 hover:dark:text-black dark:bg-[#FFCC00]/80 hover:dark:bg-[#FFCC00]/70"
                   onClick={() => handleSocialLogin("yandex")}
@@ -99,8 +100,7 @@ export default function AuthPage() {
                     />
                   </svg>
                   Continue with Yandex
-                </Button>
-
+                </Button> */}
                 <Button
                   variant="outline"
                   className="bg-[#0077FF] text-white hover:bg-[#0077FF]/90 hover:text-white dark:bg-[#0077FF]/80 hover:dark:bg-[#0077FF]/70"
@@ -137,6 +137,7 @@ export default function AuthPage() {
                     Continue with GitHub
                   </div>
                 </Button>
+                <YandexButton/>
               </div>
             </CardContent>
           </Card>

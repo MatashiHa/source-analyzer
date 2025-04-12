@@ -77,6 +77,23 @@ async def get_user_info(code: str, provider: str):
 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+@router.get("/google")
+async def login_google():
+    pass
+
+
+@router.get("/yandex")
+async def login_yandex():
+    pass
+
+
+@router.get("/vk")
+async def login_vk():
+    pass
+
+
 scope = "user:email"  # требуем от провайдера email
 
 
