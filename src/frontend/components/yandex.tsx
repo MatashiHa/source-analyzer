@@ -7,12 +7,12 @@ export function YandexButton() {
             padding: 0,
             // border: 'none', // Убирает границу
             borderRadius: 8,
-            overflow: 'hidden', // Отключает скролл
+            height: 40,
             display: 'block', // Убирает лишние отступы у инлайновых элементов
           }}
         srcDoc={`
             <!-- Подключаем SDK Яндекс OAuth -->
-            <html style="background: black; margin: 0; padding: 0;">
+            <html style="background: black; margin: 0; padding: 0; align-items: center;">
             <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
             <div id="buttonContainerId"></div>
             <!-- Код инициализации -->
