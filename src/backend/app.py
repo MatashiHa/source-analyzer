@@ -7,6 +7,7 @@ from auth import router as auth_router
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from import_api import router as import_router
 
 load_dotenv()
 
@@ -24,3 +25,4 @@ app.add_middleware(
 
 # uvicorn backend.app:app --reload
 app.include_router(auth_router)
+app.include_router(import_router)

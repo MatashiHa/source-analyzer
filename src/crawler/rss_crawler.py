@@ -158,8 +158,12 @@ class RSSCrawler:
 
 async def import_data(args, tokenizer, embedding_model, device):
     """creates and runs the crawler"""
+    if args.urls:
+        urls = args.urls
+    else:
+        urls = args
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, args.urls)
+        crawler = RSSCrawler(session, urls)
         await crawler.run(tokenizer, embedding_model, device)
 
 
