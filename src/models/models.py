@@ -24,19 +24,29 @@ else:
     device = "cpu"
     bnb_config = None
 
-tokenizer = AutoTokenizer.from_pretrained(
-    os.getenv("LLM_MODEL_NAME"),
-    token=os.getenv("HF_TOKEN"),
-)
-embedding_model = AutoModel.from_pretrained(
-    os.getenv("EMBEDDING_MODEL_NAME"),
-    token=os.getenv("HF_TOKEN"),
-)
-embedding_model.resize_token_embeddings(len(tokenizer))
 
-model = AutoModelForCausalLM.from_pretrained(
-    os.getenv("LLM_MODEL_NAME"),
-    token=os.getenv("HF_TOKEN"),
-    quantization_config=bnb_config,
-    device_map=device,
-)
+def load_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained(
+        os.getenv("LLM_MODEL_NAME"),
+        token=os.getenv("HF_TOKEN"),
+    )
+    return tokenizer
+
+
+def load_embedding_model(tokenizer):
+    embedding_model = AutoModel.from_pretrained(
+        os.getenv("EMBEDDING_MODEL_NAME"),
+        token=os.getenv("HF_TOKEN"),
+    )
+    embedding_model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
+    return embedding_model
+
+
+def load_model():
+    model = AutoModelForCausalLM.from_pretrained(
+        os.getenv("LLM_MODEL_NAME"),
+        token=os.getenv("HF_TOKEN"),
+        quantization_config=bnb_config,
+        device_map=device,
+    )
+    return model

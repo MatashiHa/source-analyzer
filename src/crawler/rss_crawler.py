@@ -1,5 +1,6 @@
+from collections import namedtuple
 from datetime import datetime
-from typing import List, Set
+from typing import List
 
 import feedparser
 import pandas as pd
@@ -14,10 +15,12 @@ from utils import filter_on_publication_date, parse_html, parse_time
 
 from .processor import get_embeddings
 
+Feed = namedtuple("Feed", ["id", "url"])
+
 
 class RSSCrawler:
     # потенциально можно будет сделать API и связать с processor
-    def __init__(self, session: AsyncSession, urls: Set[str]):
+    def __init__(self, session: AsyncSession, urls: List):
         """Class representing RSS crawler to read, process and update vector DB
 
         Args:
@@ -25,11 +28,12 @@ class RSSCrawler:
             urls (Set[str]): set of urls to get rss feed form
             embedding_model (any): text preprocessing from processor.py
         """
+        print(urls)
         # print(urls)
         self.session = session
-        self.urls = urls
+        self.feeds = [Feed(*item) for item in urls]
 
-    async def parse_rss_feeds(self, urls) -> pd.DataFrame:
+    async def parse_rss_feeds(self, feeds) -> pd.DataFrame:
         """Goes through all rss-feeds, gets new articles
 
         Returns:
@@ -38,19 +42,20 @@ class RSSCrawler:
         """
         dataframes_per_url: List[pd.DataFrame] = []
 
-        for url in tqdm(urls, total=len(urls)):
-            feed: List[feedparser.util.FeedParserDict] = feedparser.parse(url)[
-                "entries"
-            ]
-            if len(feed) == 0:
+        for feed in tqdm(feeds, total=len(feeds)):
+            feed_data: List[feedparser.util.FeedParserDict] = feedparser.parse(
+                feed.url
+            )["entries"]
+            if len(feed_data) == 0:
                 print("Feed was empty.")
-            curr_df: pd.DataFrame = await self.__parse_rss_feed(feed)
+            curr_df: pd.DataFrame = await self.__parse_rss_feed(feed_data)
             dataframes_per_url.append(curr_df)
-            print(f"Parsed {url} feed with {len(feed)} records.")
+            print(f"Parsed {feed.url} feed with {len(feed_data)} records.")
 
         df = pd.concat(dataframes_per_url).drop_duplicates(subset="article_id")
         df.set_index("article_id")
-        print(f"Parsed {len(urls)} feeds with {len(df)} records in total.")
+        df["feed_id"] = feed.id
+        print(f"Parsed {len(feeds)} feeds with {len(df)} records in total.")
         return df
 
     @staticmethod
@@ -134,13 +139,17 @@ class RSSCrawler:
     async def run(self, tokenizer, model, device):
         # прнимаем запрос от пользователя с url
         # эти url парсим, обрабатываем, а потом обновляем БД
-        df = await self.parse_rss_feeds(self.urls)
+        df = await self.parse_rss_feeds(self.feeds)
         print("data parsed")
 
+        if not model or not tokenizer:
+            raise ValueError("Model not found")
         # пока используем привязку к сегодняшнему дню, потом можно сделать пользовательскую настройку
         today = datetime.today().strftime("%Y-%m-%d")
         filtered_df = filter_on_publication_date(df=df, min_date=today).copy()
-
+        print(f"Filtered resulting in {len(filtered_df)} records in total.")
+        if filtered_df.empty:
+            raise ValueError("df is empty")
         df_with_embeddings, _ = get_embeddings(
             tokenizer=tokenizer,
             model=model,
@@ -158,12 +167,9 @@ class RSSCrawler:
 
 async def import_data(args, tokenizer, embedding_model, device):
     """creates and runs the crawler"""
-    if args.urls:
-        urls = args.urls
-    else:
-        urls = args
+    data = getattr(args, "urls", args)
     async with async_session_maker() as session:
-        crawler = RSSCrawler(session, urls)
+        crawler = RSSCrawler(session, data)
         await crawler.run(tokenizer, embedding_model, device)
 
 

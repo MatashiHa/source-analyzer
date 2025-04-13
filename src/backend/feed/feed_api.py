@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from sqlalchemy import select
 
 from .feed_dao import FeedsDAO
 
@@ -15,13 +14,17 @@ async def create_feed(feed_url: str):  # принимаем feed_url как па
 
 @router.post("/import")
 async def import_data():
-    from database.models import Feed
-
     from crawler.rss_crawler import import_data
-    from models.models import device, embedding_model, tokenizer
+    from models.models import device, load_embedding_model, load_tokenizer
 
-    urls = select(Feed.url)
-    import_data(
-        urls, tokenizer=tokenizer, embedding_model=embedding_model, device=device
-    )
-    return {"status": "success", "message": "Data is loaded!"}
+    tokenizer = load_tokenizer()
+    embedding_model = load_embedding_model(tokenizer)
+    urls = await FeedsDAO.get_all_feed_ids_with_urls()
+    try:
+        await import_data(
+            urls, tokenizer=tokenizer, embedding_model=embedding_model, device=device
+        )
+    except ValueError as e:
+        return {"message": e}
+    finally:
+        return {"status": "success", "message": "Data is loaded!"}
