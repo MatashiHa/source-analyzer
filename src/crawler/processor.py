@@ -23,12 +23,9 @@ def get_embeddings(
         pd.DataFrame: processed dataframe with embeddings column
     """
     if col_name in df.columns:
-        texts = df[col_name].to_list()
-        if not texts:  # Если список пуст
-            raise ValueError(f"No data in column '{col_name}'")
         # Токенизация и получение эмбеддингов
         inputs = tokenizer(
-            texts,
+            df[col_name].to_list(),
             return_tensors="pt",
             padding=True,
             truncation=True,

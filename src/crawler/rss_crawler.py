@@ -28,8 +28,6 @@ class RSSCrawler:
             urls (Set[str]): set of urls to get rss feed form
             embedding_model (any): text preprocessing from processor.py
         """
-        print(urls)
-        # print(urls)
         self.session = session
         self.feeds = [Feed(*item) for item in urls]
 
@@ -147,9 +145,9 @@ class RSSCrawler:
         # пока используем привязку к сегодняшнему дню, потом можно сделать пользовательскую настройку
         today = datetime.today().strftime("%Y-%m-%d")
         filtered_df = filter_on_publication_date(df=df, min_date=today).copy()
-        print(f"Filtered resulting in {len(filtered_df)} records in total.")
-        if filtered_df.empty:
-            raise ValueError("df is empty")
+        count = len(filtered_df)
+        if not count:  # Если список пуст
+            return count
         df_with_embeddings, _ = get_embeddings(
             tokenizer=tokenizer,
             model=model,
@@ -163,6 +161,7 @@ class RSSCrawler:
         async with async_session_maker() as session:
             await self.update_db(session, filtered_df)
         print("DB updated!")
+        return count
 
 
 async def import_data(args, tokenizer, embedding_model, device):
