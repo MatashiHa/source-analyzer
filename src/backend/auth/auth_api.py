@@ -86,7 +86,7 @@ async def login_google():
 
 @router.get("/yandex")
 async def login_yandex():
-    pass
+    return {"message": "Hello"}
 
 
 @router.get("/vk")

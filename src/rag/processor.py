@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, select, text
+from sqlalchemy import and_, or_, select
 
 from backend.database.database import async_session_maker
 from backend.database.models import Article, LLMConnection
@@ -68,6 +68,6 @@ async def process(args, tokenizer, model, embedding_model, device):
                 await session.commit()
                 await session.refresh(llm_conn)  # Получить актуальное `updated_at`
 
-    await session.execute(text("DELETE FROM llm_conn;"))
-    await session.commit()
+    # await session.execute(text("DELETE FROM llm_conn;"))
+    # await session.commit()
     print("Processing complete!")

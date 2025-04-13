@@ -48,8 +48,8 @@ class Feed(Base):
     __tablename__ = "feeds"
     feed_id: Mapped[int] = mapped_column(primary_key=True)
     url: Mapped[str] = mapped_column(unique=True)
-    title: Mapped[str] = mapped_column(String(200), nullable=True)
-    description: Mapped[str] = mapped_column(String(600), nullable=True)
+    title: Mapped[str | None] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(String(600))
 
     # Связь многие-ко-многим с User
     users: Mapped[list["User"]] = relationship(
