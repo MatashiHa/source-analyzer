@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
+from analysis import router as analysis_router
 from auth.auth_api import router as auth_router
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -26,3 +27,4 @@ app.add_middleware(
 # uvicorn backend.main:app --reload
 app.include_router(auth_router)
 app.include_router(feed_router)
+app.include_router(analysis_router)

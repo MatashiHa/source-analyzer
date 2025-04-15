@@ -91,8 +91,9 @@ class LLMConnection(Base):
     __tablename__ = "llm_conns"
     request_id: Mapped[int] = mapped_column(primary_key=True)
     # document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.document_id"))
-    title: Mapped[str] = mapped_column()
+    name: Mapped[str] = mapped_column(default="New Analysis")
     category: Mapped[str] = mapped_column()
+    example: Mapped[str] = mapped_column()
     response = mapped_column(JSONB, nullable=True)  # ответ модели
     is_busy: Mapped[bool] = mapped_column(default=True)  # Обрабатывается ли
     labeled: Mapped[bool] = mapped_column(default=False)  # разамчена ли пользователями

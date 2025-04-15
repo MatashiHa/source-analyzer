@@ -6,9 +6,9 @@ router = APIRouter(prefix="/feed", tags=["Feed"])
 
 
 @router.post("/create")
-async def create_feed(feed_url: str):  # принимаем feed_url как параметр функции
+async def create_feed(feed_url: str):
     await FeedsDAO.add(url=feed_url)
-    return {"status": "success", "url": feed_url}  # рекомендуется возвращать ответ
+    return {"status": "success", "url": feed_url}
 
 
 @router.post("/import")

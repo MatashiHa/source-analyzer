@@ -8,6 +8,8 @@ import { AlertCircle, FileText } from "lucide-react"
 import axios from "axios"
 import Script from 'next/script'
 import {YandexButton} from "@/components/yandex"
+
+
 export default function AuthPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)

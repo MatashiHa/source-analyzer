@@ -16,14 +16,24 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileUploader } from "@/components/file-uploader"
 import { ChevronLeft } from "lucide-react"
+import axios from "axios"
 
 export default function NewAnalysisPage() {
   const router = useRouter()
   const [analysisType, setAnalysisType] = useState("single")
   const [sourceType, setSourceType] = useState("files")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    try {
+      const formData = new FormData(e.currentTarget)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/analysis/create`, formData)
+      if (!response) throw new Error("Ошибка отправки");
+      console.log(formData)
+      alert("Данные отправлены!");
+    } catch (error) {
+      console.error(error);
+    }
     // In a real app, this would process the form data
     router.push("/analysis/processing")
   }
@@ -54,12 +64,12 @@ export default function NewAnalysisPage() {
             <CardContent className="space-y-6">
               <div className="grid gap-3">
                 <Label htmlFor="analysis-name">Analysis Name</Label>
-                <Input id="analysis-name" placeholder="Enter a descriptive name" required />
+                <Input name="name" id="analysis-name" placeholder="Enter a descriptive name" required />
               </div>
 
               <div className="grid gap-3">
                 <Label>Analysis Type</Label>
-                <RadioGroup defaultValue="single" onValueChange={setAnalysisType}>
+                <RadioGroup name="type" defaultValue="single" onValueChange={setAnalysisType}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="single" id="single" />
                     <Label htmlFor="single" className="font-normal">
@@ -94,7 +104,7 @@ export default function NewAnalysisPage() {
                 <CardDescription>Choose classes for analysis from:</CardDescription>
                 <div className="grid gap-3">
                   <Label htmlFor="analysis-name">Analysis Categories</Label>
-                  <Input id="analysis-name" placeholder="Enter a category or classes separated by comma for analysis" required />
+                  <Input name="categories" id="analysis-name" placeholder="Enter a category or classes separated by comma for analysis" required />
                 </div>
 
                 <CardDescription>or...</CardDescription>
@@ -115,7 +125,7 @@ export default function NewAnalysisPage() {
                 <CardDescription>To make analysis more efficient give it some context!</CardDescription>
                 <div className="grid gap-3">
                   <Label htmlFor="analysis-name">Examples (optional)</Label>
-                  <Input id="analysis-name" placeholder="<Text>: The weather is good tonight! <Prediction>: Positive;" />
+                  <Input name="examples" id="analysis-name" placeholder="<Text>: The weather is good tonight! <Prediction>: Positive;" />
                 </div>
               </div>
             </CardContent>
@@ -135,7 +145,7 @@ export default function NewAnalysisPage() {
                 <TabsContent value="manual" className="space-y-6 pt-4">
                   <div className="grid gap-3">
                     <Label>Source Type</Label>
-                    <RadioGroup defaultValue="files" onValueChange={setSourceType}>
+                    <RadioGroup name="source_type" defaultValue="files" onValueChange={setSourceType}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="files" id="files" />
                         <Label htmlFor="files" className="font-normal">
@@ -154,7 +164,7 @@ export default function NewAnalysisPage() {
                   {sourceType === "files" ? (
                     <div className="grid gap-3">
                       <Label>Upload Documents</Label>
-                      <FileUploader />
+                      <FileUploader/>
                       <p className="text-xs text-muted-foreground">
                         Supported formats: .txt, .docx, .pdf (Max 10MB per file)
                       </p>
@@ -162,7 +172,7 @@ export default function NewAnalysisPage() {
                   ) : (
                     <div className="grid gap-3">
                       <Label htmlFor="source-links">Source Links</Label>
-                      <Textarea id="source-links" placeholder="Enter URLs (one per line)" className="min-h-[120px]" />
+                      <Textarea name="urls" id="source-links" placeholder="Enter URLs (one per line)" className="min-h-[120px]" />
                       <p className="text-xs text-muted-foreground">
                         Enter one URL per line. The system will crawl and analyze each link.
                       </p>
@@ -218,74 +228,6 @@ export default function NewAnalysisPage() {
             </CardContent>
           </Card>
 
-          {/* <Card>
-            <CardHeader>
-              <CardTitle>Analysis Options</CardTitle>
-              <CardDescription>Configure visualization and output preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Visualization Types</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="bar-charts" defaultChecked />
-                    <Label htmlFor="bar-charts" className="font-normal">
-                      Bar Charts
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="word-clouds" defaultChecked />
-                    <Label htmlFor="word-clouds" className="font-normal">
-                      Word Clouds
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="dynamic-graphs" defaultChecked />
-                    <Label htmlFor="dynamic-graphs" className="font-normal">
-                      Dynamic Graphs
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="timeline" defaultChecked />
-                    <Label htmlFor="timeline" className="font-normal">
-                      Timeline
-                    </Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Output Options</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="summary" defaultChecked />
-                    <Label htmlFor="summary" className="font-normal">
-                      Generate Summary
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="source-ranking" defaultChecked />
-                    <Label htmlFor="source-ranking" className="font-normal">
-                      Source Ranking
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="export-pdf" defaultChecked />
-                    <Label htmlFor="export-pdf" className="font-normal">
-                      Export as PDF
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="export-data" defaultChecked />
-                    <Label htmlFor="export-data" className="font-normal">
-                      Export Raw Data
-                    </Label>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
-
           <div className="flex justify-end gap-4">
             <Button variant="outline" type="button" onClick={() => router.push("/")}>
               Cancel
@@ -298,3 +240,70 @@ export default function NewAnalysisPage() {
   )
 }
 
+{/* <Card>
+  <CardHeader>
+    <CardTitle>Analysis Options</CardTitle>
+    <CardDescription>Configure visualization and output preferences</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="space-y-2">
+      <Label>Visualization Types</Label>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center space-x-2">
+          <Switch id="bar-charts" defaultChecked />
+          <Label htmlFor="bar-charts" className="font-normal">
+            Bar Charts
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="word-clouds" defaultChecked />
+          <Label htmlFor="word-clouds" className="font-normal">
+            Word Clouds
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="dynamic-graphs" defaultChecked />
+          <Label htmlFor="dynamic-graphs" className="font-normal">
+            Dynamic Graphs
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="timeline" defaultChecked />
+          <Label htmlFor="timeline" className="font-normal">
+            Timeline
+          </Label>
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-2">
+      <Label>Output Options</Label>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center space-x-2">
+          <Switch id="summary" defaultChecked />
+          <Label htmlFor="summary" className="font-normal">
+            Generate Summary
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="source-ranking" defaultChecked />
+          <Label htmlFor="source-ranking" className="font-normal">
+            Source Ranking
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="export-pdf" defaultChecked />
+          <Label htmlFor="export-pdf" className="font-normal">
+            Export as PDF
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch id="export-data" defaultChecked />
+          <Label htmlFor="export-data" className="font-normal">
+            Export Raw Data
+          </Label>
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card> */}
