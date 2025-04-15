@@ -19,25 +19,29 @@ async def process(args, tokenizer, model, embedding_model, device):
     # тут просто запускаем процесс обработки данных в БД до тех пор пока есть неразмеченные данные
     async with async_session_maker() as session:
         # TODO: изменить запрос добавив пользовательские параметры по времени и по источнику
-        stmt = select(Article).where(
+        stmt = select(
+            Article
+        ).where(
             # на обработку берём только те статьи где либо ещё нет связи c llm_conn по той же категории или статья не имеет ответа на запрос,
             # не аннотируется в текущий момент
+            Article.feed_id == args.feed_id,
             or_(
                 ~Article.llm_conns.any(),
                 Article.llm_conns.any(
                     and_(
-                        ~LLMConnection.is_annotating,
+                        LLMConnection.is_busy,  # по умолчанию true т.к. новые статьи сразу беруться на обработку,
+                        ~LLMConnection.labeled,
                         LLMConnection.response is None,
-                        LLMConnection.category != args.category,
+                        # LLMConnection.category != args.category,
                     )
                 ),
-            )
+            ),
         )
         entries = (await session.execute(stmt)).scalars().all()
         connections_to_process = []
         for entry in entries:
             llm_conn = LLMConnection(
-                article_id=entry.article_id, category=args.category, is_annotating=False
+                article_id=entry.article_id, category=args.category
             )
             session.add(llm_conn)
             connections_to_process.append(llm_conn)
@@ -57,7 +61,7 @@ async def process(args, tokenizer, model, embedding_model, device):
                     ],
                 )
                 print(response)
-                llm_conn.is_annotating = False
+                llm_conn.is_busy = False
                 llm_conn.response = remove_json_markdown(response)
                 # await session.commit()
             except Exception as e:

@@ -104,7 +104,7 @@ async def rag_processing(
                 LLMConnection.response,
             )
             .join(LLMConnection)
-            .where(~LLMConnection.is_annotating)
+            .where(~LLMConnection.is_busy)
             .order_by(Article.embeddings.cosine_distance(query_embedding))
             .limit(5)
         )
