@@ -64,6 +64,11 @@ class Feed(Base):
         backref="feed",
         lazy="selectin",
     )
+    analyses: Mapped[list["AnalysisRequest"]] = relationship(
+        "AnalysisRequest",
+        backref="feed",
+        lazy="selectin",
+    )
 
 
 # у RSS-фида есть набор статей
@@ -79,27 +84,36 @@ class Article(Base):
     feed_id: Mapped[int] = mapped_column(
         ForeignKey("feeds.feed_id", ondelete="CASCADE")
     )
-    # Связь один-ко-многим с LLMConnection
+
+
+class AnalysisRequest(Base):
+    __tablename__ = "analyses"
+    request_id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200), default="New Analysis")
+    category: Mapped[str] = mapped_column(String(50))
+    examples: Mapped[str] = mapped_column(String(400))
+    is_active: Mapped[bool] = mapped_column(default=True)
+    feed_id: Mapped[int] = mapped_column(
+        ForeignKey("feeds.feed_id", ondelete="CASCADE")
+    )
     llm_conns: Mapped[list["LLMConnection"]] = relationship(
         "LLMConnection",
-        backref="article",
+        backref="analysis",
         lazy="selectin",
     )
 
 
 class LLMConnection(Base):
     __tablename__ = "llm_conns"
-    request_id: Mapped[int] = mapped_column(primary_key=True)
+    conn_id: Mapped[int] = mapped_column(primary_key=True)
     # document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.document_id"))
-    name: Mapped[str] = mapped_column(default="New Analysis")
-    category: Mapped[str] = mapped_column()
-    example: Mapped[str] = mapped_column()
     response = mapped_column(JSONB, nullable=True)  # ответ модели
-    is_busy: Mapped[bool] = mapped_column(default=True)  # Обрабатывается ли
-    labeled: Mapped[bool] = mapped_column(default=False)  # разамчена ли пользователями
+    is_labeled: Mapped[bool] = mapped_column(
+        default=False
+    )  # разамчена ли пользователями
 
-    article_id: Mapped[int | None] = mapped_column(
-        ForeignKey("articles.article_id", ondelete="CASCADE")
+    request_id: Mapped[int] = mapped_column(
+        ForeignKey("analyses.request_id", ondelete="CASCADE")
     )
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
 

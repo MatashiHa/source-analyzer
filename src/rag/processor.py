@@ -18,7 +18,6 @@ async def process(args, tokenizer, model, embedding_model, device):
     print("Processing started.")
     # тут просто запускаем процесс обработки данных в БД до тех пор пока есть неразмеченные данные
     async with async_session_maker() as session:
-        # TODO: изменить запрос добавив пользовательские параметры по времени и по источнику
         stmt = select(
             Article
         ).where(
@@ -27,10 +26,10 @@ async def process(args, tokenizer, model, embedding_model, device):
             Article.feed_id == args.feed_id,
             or_(
                 ~Article.llm_conns.any(),
-                Article.llm_conns.any(
+                Article.feed_id.any(
                     and_(
                         LLMConnection.is_busy,  # по умолчанию true т.к. новые статьи сразу беруться на обработку,
-                        ~LLMConnection.labeled,
+                        ~LLMConnection.is_labeled,
                         LLMConnection.response is None,
                         # LLMConnection.category != args.category,
                     )
