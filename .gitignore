@@ -7,3 +7,5 @@ pyproject.toml
 *node_modules
 .pdm-python
 .venv
+*mlruns
+*outputs

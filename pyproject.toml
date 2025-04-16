@@ -17,6 +17,8 @@ mlstuff = [
     "torch>=2.6.0",
     "bitsandbytes>=0.45.4",
     "accelerate>=1.5.2",
+    "peft>=0.15.2",
+    "datasets>=3.5.0",
 ]
 dev = [
     "label-studio>=1.17.0",

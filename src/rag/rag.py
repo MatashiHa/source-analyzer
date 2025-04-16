@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import torch
 from sqlalchemy import select
+from templates import context, template
 from transformers import pipeline
 
 from backend.database.database import async_session_maker
@@ -13,64 +14,14 @@ torch.random.manual_seed(0)
 
 # задача состоит в том, чтобы классифицировать данные источников, для этого пользователь отправляет запрос в котором представлен параметр по которому проводиться классификация,
 # далее система должна классифицировать текст по трём классам проявления этого параметра: низкое, среднее, высокое. Для более точного запроса нужно подавать в контекст пары запрос-ответ согласно вопросу пользователя.
-context = [
-    {
-        "role": "system",
-        "content": """You are an AI that returns ONLY JSON answers. If you output anything but JSON you will have FAILED. Follow these rules:
-        - Output only valid JSON.
-        - JSON must include:
-        - predicted_class: the level ("high", "medium", or "low") with the highest probability among all levels.
-        - class_to_words: a mapping of each level ("high", "medium", "low") to a list of words or phrases from the text.
-        - class_to_probabilities: a mapping of each level ("high", "medium", "low") to its probability.
-        - Classify only words/phrases that meaningfully impact the category.
-        - Use the source language without reinterpretation.
-        - One word/phrase can only be in one class. Don't repeat same words.
-        - Do not mention or classify the provided context.
-        - If context with similar results is given, use it; otherwise, answer without it.
-        Keep your answer concise.""",
-    },
-    {
-        "role": "user",
-        "content": """
-        Context: <title>: Improved Classification Model Context;
-        <description>: Enhanced classification logic to prevent word duplication across levels, ensure correct probability distribution, and improve accuracy in text classification.;
-        <category>: positivity;
-        <result>: {"predicted_class": "medium", "class_to_words": {"high": ["wonderful"], "medium": ["today"], "low": ["too tired", "but"]}, "class_to_probabilities": {"high": 0.3, "medium": 0.3, "low": 0.4}}
-        Category: positivity
-        Text: the weather is good tonight, but im too tired.""",
-    },
-    {
-        "role": "assistant",
-        "content": """
-    {
-      "predicted_class": "low"
-      "class_to_words": {
-        "high": ["good"],
-        "medium": ["tonight"]
-        "low": ["tired", "but"],
-      },
-      "class_to_probabilities": {
-        "high": 0.25,
-        "medium": 0.25,
-        "low": 0.5
-        }
-    }
-    """,
-    },
-]
 
-template = """
-    Context: {context}
-    Category: {category}
-    Text: {text}
-"""
 # Ошибки в обработке: одни и те же слова в нескольких классах, иногда путает class с level (при установке predicted_level в примере), появление больших повторений в в одном классе
 # из-за чего не хватает токенов для полного ответа, неточность в классификации, пытается отнести к классу даже то что не имеет значения, иногда отсутствуют вероятности,
 # классифицирует как low хотя вероятность не наибольшая среди классов, иногда интерпретирует русские слова на английском и выдаёт мусор
 
 
 async def rag_processing(
-    tokenizer: any, model: any, embedding_model: any, device: str, request: list
+    tokenizer: any, model: any, embedding_model: any, device: str, request: dict
 ) -> str:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
@@ -86,7 +37,7 @@ async def rag_processing(
         tokenizer=tokenizer,
         model=embedding_model,
         device=device,
-        df=pd.DataFrame({request[1]}),
+        df=pd.DataFrame({request["title"]}),
     )
     query_embedding = query_embedding.tolist()[0]
     # print(shape)
@@ -124,7 +75,7 @@ async def rag_processing(
         # rag_query = " ".join(result)
 
         query_template = template.format(
-            context=rag_query, category=request[0], text=request[1]
+            context=rag_query, category=request["category"], text=request["title"]
         )
 
         # добавляем в контекст вопрос

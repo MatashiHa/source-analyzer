@@ -55,10 +55,10 @@ async def process(args, tokenizer, model, embedding_model, device):
                     model=model,
                     embedding_model=embedding_model,
                     device=device,
-                    request=[
-                        args.category,
-                        (await llm_conn.awaitable_attrs.article).title,
-                    ],
+                    request={
+                        "category": args.category,
+                        "title": (await llm_conn.awaitable_attrs.article).title,
+                    },
                 )
                 print(response)
                 llm_conn.is_busy = False

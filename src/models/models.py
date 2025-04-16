@@ -29,6 +29,7 @@ def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(
         os.getenv("LLM_MODEL_NAME"),
         token=os.getenv("HF_TOKEN"),
+        # device_map=device,
     )
     return tokenizer
 
