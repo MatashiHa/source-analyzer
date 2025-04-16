@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from backend.analysis_dao import AnalysesDAO
 from models.models import device, load_embedding_model, load_model, load_tokenizer
 
 from .feed_dao import FeedsDAO
@@ -23,7 +22,7 @@ async def import_data():
     return {"message": f"{count} news was loaded."}
 
 
-class args:
+class Args:
     feed_id: int
     category: str
 
@@ -33,12 +32,11 @@ async def process(url: str, title: str | None, description: str | None, category
     from rag.processor import process
 
     feed = await FeedsDAO.find_one_or_none(url=url)
-    analysis = await AnalysesDAO.find_one_or_none(feed.id)
-    if not feed and not analysis:
+    if not feed:
         await FeedsDAO.add(url=url, title=title, description=description)
-        await AnalysesDAO.add(url=url, title=title, category=category, feed=feed)
 
-    AnalysesDAO.add(feed=feed)
-
-    await process(feed, tokenizer, model, embedding_model, device)
+    args = Args()
+    args.feed_id = feed.feed_id
+    args.category = category
+    await process(args, tokenizer, model, embedding_model, device)
     return {"status": "success", "message": "Processing started!"}
