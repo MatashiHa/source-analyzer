@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from feed.feed_api import router as feed_router
 
-from backend.analysis_api import router as analysis_router
+from backend.analysis.analysis_api import router as analysis_router
 
 load_dotenv()
 

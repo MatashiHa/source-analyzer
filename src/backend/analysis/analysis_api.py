@@ -41,7 +41,7 @@ async def create_new_analysis(request: Request):
             predicted_class: {prediction}
             """
 
-    from analysis_dao import AnalysesDAO
+    from backend.analysis.analysis_dao import AnalysesDAO
 
     await AnalysesDAO().add(
         name=name,

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from backend.analysis_dao import AnalysesDAO
+from backend.analysis.analysis_dao import AnalysesDAO
 from models.models import device, load_embedding_model, load_model, load_tokenizer
 
 from .feed_dao import FeedsDAO

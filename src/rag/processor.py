@@ -1,4 +1,4 @@
-from backend.analysis_dao import AnalysesDAO
+from backend.analysis.analysis_dao import AnalysesDAO
 from backend.article_dao import ArticlesDAO
 from backend.database.database import async_session_maker
 from backend.database.models import LLMConnection
