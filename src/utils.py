@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import re
 
@@ -100,6 +101,20 @@ def filter_on_publication_date(
 
 def remove_json_markdown(text):
     return re.sub(r"```json\s*([\s\S]*?)\s*```", r"\1", text)
+
+
+def is_valid_json(json_string):
+    """
+    Проверяет, является ли строка валидным JSON.
+
+    :param json_string: Строка для проверки
+    :return: True если JSON валиден, False в противном случае
+    """
+    try:
+        json.loads(json_string)
+    except (ValueError, TypeError):
+        return False
+    return True
 
 
 # def get_logger(name: str) -> logging.Logger:

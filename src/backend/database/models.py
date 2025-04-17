@@ -86,7 +86,7 @@ class Article(Base):
     )
     llm_conns: Mapped[list["LLMConnection"]] = relationship(
         "LLMConnection",
-        backref="analysis",
+        backref="article",
         lazy="selectin",
     )
 

@@ -7,10 +7,10 @@ from templates import context, template
 from transformers import pipeline
 
 from backend.database.database import async_session_maker
-from backend.database.models import Article, LLMConnection
+from backend.database.models import AnalysisRequest, Article, LLMConnection
 from crawler.processor import get_embeddings
 
-torch.random.manual_seed(0)
+torch.random.manual_seed(42)
 
 # задача состоит в том, чтобы классифицировать данные источников, для этого пользователь отправляет запрос в котором представлен параметр по которому проводиться классификация,
 # далее система должна классифицировать текст по трём классам проявления этого параметра: низкое, среднее, высокое. Для более точного запроса нужно подавать в контекст пары запрос-ответ согласно вопросу пользователя.
@@ -18,6 +18,38 @@ torch.random.manual_seed(0)
 # Ошибки в обработке: одни и те же слова в нескольких классах, иногда путает class с level (при установке predicted_level в примере), появление больших повторений в в одном классе
 # из-за чего не хватает токенов для полного ответа, неточность в классификации, пытается отнести к классу даже то что не имеет значения, иногда отсутствуют вероятности,
 # классифицирует как low хотя вероятность не наибольшая среди классов, иногда интерпретирует русские слова на английском и выдаёт мусор
+
+
+async def get_relevant_data_from_articles(
+    query_embedding, max_entries=5, choose_labeled=False
+):
+    async with async_session_maker() as session:
+        stmt = (
+            select(
+                Article.title,
+                Article.description,
+                AnalysisRequest.category,
+                LLMConnection.response,
+            )
+            .join(LLMConnection, Article.article_id == LLMConnection.article_id)
+            .join(
+                AnalysisRequest, LLMConnection.request_id == AnalysisRequest.request_id
+            )
+            # .where(
+            #     LLMConnection.labeled == True,
+            # )
+            .order_by(Article.embeddings.cosine_distance(query_embedding))
+            .limit(max_entries)
+        )
+        if choose_labeled:
+            stmt = stmt.where(LLMConnection.labeled == True)  # noqa
+
+        stmt = stmt.order_by(Article.embeddings.cosine_distance(query_embedding)).limit(
+            max_entries
+        )
+
+        result = await session.execute(stmt)
+        return result.all()
 
 
 async def rag_processing(
@@ -46,53 +78,36 @@ async def rag_processing(
     #     query_embedding = projection(query_embedding)
 
     # making async request to database with set condition to get 5 max relevant examples
-    async with async_session_maker() as session:
-        stmt = (
-            select(
-                Article.title,
-                Article.description,
-                LLMConnection.category,
-                LLMConnection.response,
-            )
-            .join(LLMConnection)
-            .where(~LLMConnection.is_busy)
-            .order_by(Article.embeddings.cosine_distance(query_embedding))
-            .limit(5)
-        )
 
-        # Если ответа нет, то дополнять только релевантынм текстом, чтобы
-        # модель поняла какое место занимает текущее преложение в контексте.
-        # Вопрос в паре это или заголовки(+описание?) статей для rss или отрывки текста из документов.
-        # result = (await session.scalars(stmt)).all()
-        result = (await session.execute(stmt)).all()
-        combined_results = [
-            f"<title>: {title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
-            if response
-            else f"{title};{description}"
-            for title, description, category, response in result
-        ]
-        rag_query = " ".join(combined_results)
-        # rag_query = " ".join(result)
+    result = await get_relevant_data_from_articles(query_embedding=query_embedding)
+    combined_results = [
+        f"<title>: {title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
+        if response
+        else f"{title};{description}"
+        for title, description, category, response in result
+    ]
+    rag_query = " ".join(combined_results)
+    # rag_query = " ".join(result)
 
-        query_template = template.format(
-            context=rag_query, category=request["category"], text=request["title"]
-        )
+    query_template = template.format(
+        context=rag_query, category=request["category"], text=request["title"]
+    )
 
-        # добавляем в контекст вопрос
-        context.append({"role": "user", "content": query_template})
+    # добавляем в контекст вопрос
+    context.append({"role": "user", "content": query_template})
 
-        pipe = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-        )
+    pipe = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+    )
 
-        generation_args = {
-            "max_new_tokens": 200,
-            "return_full_text": False,
-            "do_sample": False,
-        }
+    generation_args = {
+        "max_new_tokens": 200,
+        "return_full_text": False,
+        "do_sample": False,
+    }
 
-        output = pipe(context, **generation_args)
-        # sometimes output might contain json markdown
-        return output[0]["generated_text"]
+    output = pipe(context, **generation_args)
+    # sometimes output might contain json markdown
+    return output[0]["generated_text"]

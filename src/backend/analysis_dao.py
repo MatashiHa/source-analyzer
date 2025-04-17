@@ -1,6 +1,6 @@
 from backend.dao.base import BaseDAO
-from backend.database.models import LLMConnection
+from backend.database.models import AnalysisRequest
 
 
 class AnalysesDAO(BaseDAO):
-    model = LLMConnection
+    model = AnalysisRequest

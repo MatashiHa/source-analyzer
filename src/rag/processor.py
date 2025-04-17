@@ -1,9 +1,9 @@
-from sqlalchemy import and_, or_, select
-
+from backend.analysis_dao import AnalysesDAO
+from backend.article_dao import ArticlesDAO
 from backend.database.database import async_session_maker
-from backend.database.models import Article, LLMConnection
+from backend.database.models import LLMConnection
 from rag.rag import rag_processing
-from utils import remove_json_markdown
+from utils import is_valid_json, remove_json_markdown
 
 
 async def process(args, tokenizer, model, embedding_model, device):
@@ -18,35 +18,17 @@ async def process(args, tokenizer, model, embedding_model, device):
     print("Processing started.")
     # тут просто запускаем процесс обработки данных в БД до тех пор пока есть неразмеченные данные
     async with async_session_maker() as session:
-        stmt = select(
-            Article
-        ).where(
-            # на обработку берём только те статьи где либо ещё нет связи c llm_conn по той же категории или статья не имеет ответа на запрос,
-            # не аннотируется в текущий момент
-            Article.feed_id == args.feed_id,
-            or_(
-                ~Article.llm_conns.any(),
-                Article.feed_id.any(
-                    and_(
-                        LLMConnection.is_busy,  # по умолчанию true т.к. новые статьи сразу беруться на обработку,
-                        ~LLMConnection.is_labeled,
-                        LLMConnection.response is None,
-                        # LLMConnection.category != args.category,
-                    )
-                ),
-            ),
+        analysis = await AnalysesDAO.find_one_or_none_by_id(args.req_id)
+        entries = await ArticlesDAO.find_articles_without_analysis(
+            args.feed_id, args.req_id
         )
-        entries = (await session.execute(stmt)).scalars().all()
         connections_to_process = []
         for entry in entries:
-            llm_conn = LLMConnection(
-                article_id=entry.article_id, category=args.category
-            )
-            session.add(llm_conn)
-            connections_to_process.append(llm_conn)
+            conn = LLMConnection(article_id=entry.article_id, requset_id=args.req_id)
+            session.add(conn)
+            connections_to_process.append(conn)
         await session.commit()
-
-        for llm_conn in connections_to_process:
+        for conn in connections_to_process:
             # print((await llm_conn.awaitable_attrs.article).title)
             try:
                 response = await rag_processing(
@@ -55,21 +37,24 @@ async def process(args, tokenizer, model, embedding_model, device):
                     embedding_model=embedding_model,
                     device=device,
                     request={
-                        "category": args.category,
-                        "title": (await llm_conn.awaitable_attrs.article).title,
+                        "category": analysis.category,
+                        "title": (await conn.awaitable_attrs.article).title,
                     },
                 )
                 print(response)
-                llm_conn.is_busy = False
-                llm_conn.response = remove_json_markdown(response)
+
+                response = remove_json_markdown(response)
+                if is_valid_json(response):
+                    conn.response = response
+
                 # await session.commit()
             except Exception as e:
                 print(e)
-                llm_conn.response = {"error": str(e)}
+                conn.response = {"error": str(e)}
                 # await session.commit()
             finally:
                 await session.commit()
-                await session.refresh(llm_conn)  # Получить актуальное `updated_at`
+                await session.refresh(conn)  # Получить актуальное `updated_at`
 
     # await session.execute(text("DELETE FROM llm_conn;"))
     # await session.commit()
