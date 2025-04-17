@@ -1,15 +1,10 @@
 from fastapi import APIRouter
 
 from backend.analysis.analysis_dao import AnalysesDAO
-from models.models import device, load_embedding_model, load_model, load_tokenizer
 
 from .feed_dao import FeedsDAO
 
 router = APIRouter(prefix="/feed", tags=["Feed"])
-tokenizer = load_tokenizer()
-embedding_model = load_embedding_model(tokenizer)
-model = load_model()
-
 
 # @router.post("/create")
 # async def create_feed(url: str, title: str | None, description: str | None):
@@ -24,9 +19,7 @@ async def import_data():
 
     urls = await FeedsDAO.get_all_feed_ids_with_urls()
 
-    count = await import_data(
-        urls, tokenizer=tokenizer, embedding_model=embedding_model, device=device
-    )
+    count = await import_data(urls)
     return {"message": f"{count} news was loaded!"}
 
 
@@ -50,5 +43,5 @@ async def process(req_id: int, feed_id: int):
     args = Args()
     args.feed_id = feed.feed_id
     args.req_id = analysis.request_id
-    await process(args, tokenizer, model, embedding_model, device)
+    await process(args)
     return {"message": "Processing started!"}

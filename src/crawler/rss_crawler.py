@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from backend.database.database import async_session_maker
 from backend.database.models import Article
+from models.models import device, embedding_model, tokenizer
 from utils import filter_on_publication_date, parse_html, parse_time
 
 from .processor import get_embeddings
@@ -164,7 +165,9 @@ class RSSCrawler:
         return count
 
 
-async def import_data(args, tokenizer, embedding_model, device):
+async def import_data(
+    args, tokenizer=tokenizer, embedding_model=embedding_model, device=device
+):
     """creates and runs the crawler"""
     data = getattr(args, "urls", args)
     async with async_session_maker() as session:

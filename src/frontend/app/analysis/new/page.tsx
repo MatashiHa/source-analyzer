@@ -16,18 +16,19 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileUploader } from "@/components/file-uploader"
 import { ChevronLeft } from "lucide-react"
-import axios from "axios"
-
+// import axios from "axios"
+// axios.defaults.withCredentials=true
+import api from "@/lib/api"
 export default function NewAnalysisPage() {
   const router = useRouter()
   const [analysisType, setAnalysisType] = useState("single")
   const [sourceType, setSourceType] = useState("files")
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const formData = new FormData(e.currentTarget)
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/analysis/create`, formData)
+      // const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/analysis/create`, formData)
+      const response = await api.post(`/analysis/create`, formData)
       if (!response) throw new Error("Ошибка отправки");
       console.log(formData)
       alert("Данные отправлены!");

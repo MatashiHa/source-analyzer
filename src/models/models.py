@@ -51,3 +51,8 @@ def load_model():
         device_map=device,
     )
     return model
+
+
+tokenizer = load_tokenizer()
+embedding_model = load_embedding_model(tokenizer)
+model = load_model()

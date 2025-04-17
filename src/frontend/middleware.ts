@@ -4,10 +4,13 @@ import { NextRequest, NextResponse } from "next/server"
 export async function middleware(request: NextRequest) {
     const response = await fetch('http://localhost:8000/auth/check', {
       credentials: 'include',
-      headers: request.headers
+      headers: {
+        'Cookie': request.headers.get('Cookie') || '',
+      },
     })
     
     if (response.status === 401) {
+      console.log(response.status)
       return NextResponse.redirect(new URL('/auth', request.url))
     }
 }

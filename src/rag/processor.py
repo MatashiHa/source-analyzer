@@ -2,11 +2,18 @@ from backend.analysis.analysis_dao import AnalysesDAO
 from backend.article_dao import ArticlesDAO
 from backend.database.database import async_session_maker
 from backend.database.models import LLMConnection
+from models.models import device, embedding_model, model, tokenizer
 from rag.rag import rag_processing
 from utils import is_valid_json, remove_json_markdown
 
 
-async def process(args, tokenizer, model, embedding_model, device):
+async def process(
+    args,
+    tokenizer=tokenizer,
+    model=model,
+    embedding_model=embedding_model,
+    device=device,
+):
     """process cycle with a set LLM
 
     Args:

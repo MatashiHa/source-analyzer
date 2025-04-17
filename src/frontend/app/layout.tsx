@@ -58,4 +58,5 @@ export default function RootLayout({
 
 import './globals.css'
 import { AuthButtons } from "@/components/auth-buttons"
+import axios from "axios"
 
