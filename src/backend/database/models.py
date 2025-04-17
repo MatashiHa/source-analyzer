@@ -39,6 +39,11 @@ class User(Base):
         back_populates="users",  # Обратная ссылка (будет в Feed)
         lazy="selectin",
     )
+    analyses: Mapped[list["AnalysisRequest"]] = relationship(
+        "AnalysisRequest",
+        backref="feed",
+        lazy="selectin",
+    )
     # у провайдоров могут быть одинаковые ID но сочетание с названием всегда разное
     UniqueConstraint("provider", "provider_id", name="uix_provider_id_provider")
 
@@ -64,11 +69,6 @@ class Feed(Base):
         backref="feed",
         lazy="selectin",
     )
-    analyses: Mapped[list["AnalysisRequest"]] = relationship(
-        "AnalysisRequest",
-        backref="feed",
-        lazy="selectin",
-    )
 
 
 # у RSS-фида есть набор статей
@@ -84,17 +84,23 @@ class Article(Base):
     feed_id: Mapped[int] = mapped_column(
         ForeignKey("feeds.feed_id", ondelete="CASCADE")
     )
+    llm_conns: Mapped[list["LLMConnection"]] = relationship(
+        "LLMConnection",
+        backref="analysis",
+        lazy="selectin",
+    )
 
 
 class AnalysisRequest(Base):
     __tablename__ = "analyses"
     request_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(200), default="New Analysis")
-    category: Mapped[str] = mapped_column(String(50))
-    examples: Mapped[str] = mapped_column(String(400))
+    category: Mapped[str] = mapped_column(String(100))
+    examples: Mapped[str | None] = mapped_column(String(400))
     is_active: Mapped[bool] = mapped_column(default=True)
-    feed_id: Mapped[int] = mapped_column(
-        ForeignKey("feeds.feed_id", ondelete="CASCADE")
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id", ondelete="CASCADE")
     )
     llm_conns: Mapped[list["LLMConnection"]] = relationship(
         "LLMConnection",
@@ -114,6 +120,9 @@ class LLMConnection(Base):
 
     request_id: Mapped[int] = mapped_column(
         ForeignKey("analyses.request_id", ondelete="CASCADE")
+    )
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("articles.article_id", ondelete="CASCADE")
     )
     # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
 
