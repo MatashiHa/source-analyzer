@@ -98,7 +98,7 @@ class AnalysisRequest(Base):
     category: Mapped[str] = mapped_column(String(100))
     examples: Mapped[str | None] = mapped_column(String(400))
     is_active: Mapped[bool] = mapped_column(default=True)
-    # analysis_type: Mapped[bool] = mapped_column()
+    analysis_type: Mapped[bool] = mapped_column()
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.user_id", ondelete="CASCADE")
     )

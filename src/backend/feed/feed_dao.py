@@ -1,7 +1,8 @@
 from dao.base import BaseDAO
 from database.database import async_session_maker
 from database.models import Feed
-from sqlalchemy import insert, select
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 
 from backend.database.models import user_feed_association
 
@@ -30,5 +31,9 @@ class FeedsDAO(BaseDAO):
                     constraint="user_feed_association_pkey",  # Уникальный ключ для проверки
                 )
             )
-            session.execute(stmt)
-            session.commit()
+            try:
+                await session.execute(stmt)
+                await session.commit()
+            except Exception as e:
+                await session.rollback()
+                raise ValueError(f"User feed connection failed: {str(e)}")

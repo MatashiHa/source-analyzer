@@ -126,7 +126,7 @@ export default function NewAnalysisPage() {
                 <CardDescription>To make analysis more efficient give it some context!</CardDescription>
                 <div className="grid gap-3">
                   <Label htmlFor="analysis-name">Examples (optional)</Label>
-                  <Input name="examples" id="analysis-name" placeholder="<Text>: The weather is good tonight! <Prediction>: Positive;" />
+                  <Input name="examples" id="analysis-name" placeholder="<Text>The weather is good tonight!<Prediction>Positive;" />
                 </div>
               </div>
             </CardContent>
@@ -173,7 +173,7 @@ export default function NewAnalysisPage() {
                   ) : (
                     <div className="grid gap-3">
                       <Label htmlFor="source-links">Source Links</Label>
-                      <Textarea name="urls" id="source-links" placeholder="Enter URLs (one per line)" className="min-h-[120px]" />
+                      <Textarea name="urls" id="source-links" placeholder="Enter URLs (one per line)" className="min-h-[120px]" required/>
                       <p className="text-xs text-muted-foreground">
                         Enter one URL per line. The system will crawl and analyze each link.
                       </p>
