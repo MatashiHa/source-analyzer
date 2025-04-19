@@ -9,3 +9,6 @@ pyproject.toml
 .venv
 *mlruns
 *outputs
+*lora_adapters
+*merged_model
+*mlartifacts
