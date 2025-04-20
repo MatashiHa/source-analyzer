@@ -12,3 +12,5 @@ pyproject.toml
 *lora_adapters
 *merged_model
 *mlartifacts
+*model
+*tokenizer
