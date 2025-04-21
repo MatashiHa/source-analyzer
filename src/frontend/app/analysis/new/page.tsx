@@ -23,15 +23,15 @@ export default function NewAnalysisPage() {
   const router = useRouter()
   const [analysisType, setAnalysisType] = useState("single")
   const [sourceType, setSourceType] = useState("files")
+  const [template, setTemplate] = useState(true)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const formData = new FormData(e.currentTarget)
-      // const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/analysis/create`, formData)
       const response = await api.post(`/analysis/create`, formData)
       if (!response) throw new Error("Ошибка отправки");
-      console.log(formData)
-      alert("Данные отправлены!");
+      // console.log(formData)
+      // alert("Данные отправлены!");
     } catch (error) {
       console.error(error);
     }
@@ -40,7 +40,7 @@ export default function NewAnalysisPage() {
   }
 
   return (
-    <div className="flex flex-col items-center py-8">
+    <div className="flex flex-col items-center py-8 max-w-xl mx-auto">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/" className="flex items-center">
@@ -51,11 +51,11 @@ export default function NewAnalysisPage() {
       </div>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">New Source Analysis</h1>
-        <p className="text-muted-foreground mt-2">Configure your analysis parameters and add sources to begin</p>
+        <h1 className="text-3xl font-bold text-center">New Source Analysis</h1>
+        <p className="text-muted-foreground mt-2 text-center">Configure your analysis parameters and add sources to begin</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex-col w-full">
         <div className="grid gap-8">
           <Card>
             <CardHeader>
@@ -66,6 +66,11 @@ export default function NewAnalysisPage() {
               <div className="grid gap-3">
                 <Label htmlFor="analysis-name">Analysis Name</Label>
                 <Input name="name" id="analysis-name" placeholder="Enter a descriptive name" required />
+              </div>
+
+              <div className="grid gap-3">
+                <Label htmlFor="description">Analysis Description (optional)</Label>
+                <Input name="description" id="description" placeholder="Enter an analysis description" />
               </div>
 
               <div className="grid gap-3">
@@ -104,29 +109,38 @@ export default function NewAnalysisPage() {
               <div className="grid gap-3">
                 <CardDescription>Choose classes for analysis from:</CardDescription>
                 <div className="grid gap-3">
-                  <Label htmlFor="analysis-name">Analysis Categories</Label>
-                  <Input name="categories" id="analysis-name" placeholder="Enter a category or classes separated by comma for analysis" required />
+                  <Label htmlFor="analysis-categories">Analysis Categories</Label>
+                  <Input name="categories" id="analysis-categories" onInput={(e) => setTemplate(e.currentTarget.value === '')} placeholder="Enter a category or classes separated by comma for analysis" />
                 </div>
 
                 <CardDescription>or...</CardDescription>
-
+                
                 <Label htmlFor="classification-template">Classification Templates</Label>
-                <Select defaultValue="default">
-                  <SelectTrigger id="classification-template">
-                    <SelectValue placeholder="Select template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default Template</SelectItem>
-                    <SelectItem value="academic">Academic Sources</SelectItem>
-                    <SelectItem value="news">News Sources</SelectItem>
-                    <SelectItem value="market">Market Research</SelectItem>
-                    <SelectItem value="custom">Custom Template</SelectItem>
-                  </SelectContent>
-                </Select>
+                {template ? (
+                  <Select name="template_name" defaultValue="default">
+                    <SelectTrigger id="classification-template">
+                      <SelectValue placeholder="Select template" />
+                    </SelectTrigger>
+                    
+                    <SelectContent>
+                      <SelectItem value="default">Default Template</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  ) : (
+                    <Select disabled>
+                      <SelectTrigger id="classification-template">
+                        <SelectValue placeholder="Select template" />
+                      </SelectTrigger>
+                      
+                      <SelectContent>
+                        <SelectItem value="default">Default Template</SelectItem>
+                      </SelectContent>
+                    </Select>
+                )}
                 <CardDescription>To make analysis more efficient give it some context!</CardDescription>
                 <div className="grid gap-3">
-                  <Label htmlFor="analysis-name">Examples (optional)</Label>
-                  <Input name="examples" id="analysis-name" placeholder="<Text>The weather is good tonight!<Prediction>Positive;" />
+                  <Label htmlFor="examples">Examples (optional)</Label>
+                  <Input name="examples" id="examples" placeholder="<Text>The weather is good tonight!<Prediction>Positive;" />
                 </div>
               </div>
             </CardContent>
@@ -135,34 +149,47 @@ export default function NewAnalysisPage() {
           <Card>
             <CardHeader>
               <CardTitle>Source Collection</CardTitle>
-              <CardDescription>Add sources for analysis or set parameters for automatic collection</CardDescription>
+              <CardDescription>Add sources for analysis</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="manual" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                {/* <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="manual">Manual Sources</TabsTrigger>
                   <TabsTrigger value="automatic">Automatic Collection</TabsTrigger>
-                </TabsList>
-                <TabsContent value="manual" className="space-y-6 pt-4">
-                  <div className="grid gap-3">
-                    <Label>Source Type</Label>
-                    <RadioGroup name="source_type" defaultValue="files" onValueChange={setSourceType}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="files" id="files" />
-                        <Label htmlFor="files" className="font-normal">
-                          Upload Files
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="links" id="links" />
-                        <Label htmlFor="links" className="font-normal">
-                          Add Links
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                </TabsList> */}
+                <TabsContent value="manual" className="space-y-6">
 
-                  {sourceType === "files" ? (
+                  {analysisType === "single" ? (
+                    <div className="grid gap-3">
+                      <Label>Source Type</Label>
+                      <RadioGroup name="source_type" defaultValue="files" onValueChange={setSourceType}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="files" id="files" />
+                          <Label htmlFor="files" className="font-normal">
+                            Upload Files
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="links" id="links" />
+                          <Label htmlFor="links" className="font-normal">
+                            Add Links
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    ) : (
+                      <RadioGroup name="source_type" defaultValue="links" onValueChange={setSourceType}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="links" id="links" />
+                          <Label htmlFor="links" className="font-normal">
+                            Add Links
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    )
+                  }
+
+                  {sourceType === "files" && analysisType === "single" ? (
                     <div className="grid gap-3">
                       <Label>Upload Documents</Label>
                       <FileUploader/>
@@ -180,56 +207,11 @@ export default function NewAnalysisPage() {
                     </div>
                   )}
                 </TabsContent>
-                <TabsContent value="automatic" className="space-y-6 pt-4">
-                  <div className="grid gap-3">
-                    <Label htmlFor="topic-keywords">Topic Keywords</Label>
-                    <Textarea
-                      id="topic-keywords"
-                      placeholder="Enter keywords separated by commas"
-                      className="min-h-[80px]"
-                    />
-                  </div>
-
-                  <div className="grid gap-3">
-                    <Label htmlFor="source-limit">Maximum Sources</Label>
-                    <Input id="source-limit" type="number" min="1" max="1000" defaultValue="100" />
-                  </div>
-
-                  <div className="grid gap-3">
-                    <Label>Source Types to Include</Label>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Switch id="news-sources" defaultChecked />
-                        <Label htmlFor="news-sources" className="font-normal">
-                          News Sources
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch id="academic-sources" defaultChecked />
-                        <Label htmlFor="academic-sources" className="font-normal">
-                          Academic Papers
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch id="blog-sources" defaultChecked />
-                        <Label htmlFor="blog-sources" className="font-normal">
-                          Blogs & Articles
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch id="social-sources" />
-                        <Label htmlFor="social-sources" className="font-normal">
-                          Social Media
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-center gap-4">
             <Button variant="outline" type="button" onClick={() => router.push("/")}>
               Cancel
             </Button>
@@ -240,71 +222,3 @@ export default function NewAnalysisPage() {
     </div>
   )
 }
-
-{/* <Card>
-  <CardHeader>
-    <CardTitle>Analysis Options</CardTitle>
-    <CardDescription>Configure visualization and output preferences</CardDescription>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    <div className="space-y-2">
-      <Label>Visualization Types</Label>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center space-x-2">
-          <Switch id="bar-charts" defaultChecked />
-          <Label htmlFor="bar-charts" className="font-normal">
-            Bar Charts
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="word-clouds" defaultChecked />
-          <Label htmlFor="word-clouds" className="font-normal">
-            Word Clouds
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="dynamic-graphs" defaultChecked />
-          <Label htmlFor="dynamic-graphs" className="font-normal">
-            Dynamic Graphs
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="timeline" defaultChecked />
-          <Label htmlFor="timeline" className="font-normal">
-            Timeline
-          </Label>
-        </div>
-      </div>
-    </div>
-
-    <div className="space-y-2">
-      <Label>Output Options</Label>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center space-x-2">
-          <Switch id="summary" defaultChecked />
-          <Label htmlFor="summary" className="font-normal">
-            Generate Summary
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="source-ranking" defaultChecked />
-          <Label htmlFor="source-ranking" className="font-normal">
-            Source Ranking
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="export-pdf" defaultChecked />
-          <Label htmlFor="export-pdf" className="font-normal">
-            Export as PDF
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch id="export-data" defaultChecked />
-          <Label htmlFor="export-data" className="font-normal">
-            Export Raw Data
-          </Label>
-        </div>
-      </div>
-    </div>
-  </CardContent>
-</Card> */}

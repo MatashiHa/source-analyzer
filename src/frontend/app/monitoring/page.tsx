@@ -160,11 +160,11 @@ export default function MonitoringPage() {
   const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("all")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [newScheduleName, setNewScheduleName] = useState("")
-  const [newScheduleDescription, setNewScheduleDescription] = useState("")
-  const [newScheduleFrequency, setNewScheduleFrequency] = useState("")
-  const [newScheduleKeywords, setNewScheduleKeywords] = useState("")
+  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  // const [newScheduleName, setNewScheduleName] = useState("")
+  // const [newScheduleDescription, setNewScheduleDescription] = useState("")
+  // const [newScheduleFrequency, setNewScheduleFrequency] = useState("")
+  // const [newScheduleKeywords, setNewScheduleKeywords] = useState("")
   const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([])
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
@@ -186,20 +186,20 @@ export default function MonitoringPage() {
       )
     })
 
-  const handleCreateSchedule = () => {
-    // In a real app, this would create a new monitoring schedule
-    setIsCreateDialogOpen(false)
-    setNewScheduleName("")
-    setNewScheduleDescription("")
-    setNewScheduleFrequency("")
-    setNewScheduleKeywords("")
-    setSelectedSourceTypes([])
-    // Navigate to the new schedule or refresh the list
-  }
+  // const handleCreateSchedule = () => {
+  //   // In a real app, this would create a new monitoring schedule
+  //   setIsCreateDialogOpen(false)
+  //   setNewScheduleName("")
+  //   setNewScheduleDescription("")
+  //   setNewScheduleFrequency("")
+  //   setNewScheduleKeywords("")
+  //   setSelectedSourceTypes([])
+  //   // Navigate to the new schedule or refresh the list
+  // }
 
-  const toggleSourceType = (type: string) => {
-    setSelectedSourceTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
-  }
+  // const toggleSourceType = (type: string) => {
+  //   setSelectedSourceTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
+  // }
 
   const handleRunNow = () => {
     // In a real app, this would trigger all active schedules to run
@@ -230,6 +230,11 @@ export default function MonitoringPage() {
             Back to Dashboard
           </Link>
         </Button>
+      </div>
+
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-center">Analysis Monitoring</h1>
+        <p className="text-muted-foreground mt-1 text-center">Manage your analyses</p>
       </div>
 
       <div className="flex flex-col justify-between  mb-6">
@@ -348,31 +353,6 @@ export default function MonitoringPage() {
                     </div>
                   </div>
 
-                  {/* {schedule.alerts > 0 && (
-                    <div className="flex items-center gap-2 text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 rounded-md p-2">
-                      <Bell className="h-4 w-4" />
-                      <span>
-                        {schedule.alerts}{" "}
-                        {schedule.alerts === 1 ? t("monitoring.alertDetected") : t("monitoring.alertsDetected")}
-                      </span>
-                    </div>
-                  )} */}
-
-                  {/* <div className="space-y-1">
-                    <div className="text-xs font-medium text-muted-foreground">{t("common.keywords")}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {schedule.keywords.slice(0, 3).map((keyword, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {schedule.keywords.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{schedule.keywords.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div> */}
                 </div>
               </CardContent>
               <CardFooter className="border-t pt-4 flex justify-between">

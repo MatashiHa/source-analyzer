@@ -10,6 +10,7 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 async def create_new_analysis(request: Request):
     data = await request.json()
     name = data["name"]
+    description = data["description"]
     type = data["type"]
     categories = data["categories"]
     examples = data.get("examples")
@@ -41,7 +42,6 @@ async def create_new_analysis(request: Request):
             result = re.search(
                 r"<Text>(?P<text>.+?)<Prediction>(?P<prediction>.+?)$", example
             )
-            print(result)
             if not result:
                 continue
             text, prediction = (
@@ -63,6 +63,7 @@ async def create_new_analysis(request: Request):
         examples=formated_examples,
         user_id=user.user_id,
         analysis_type=type,
+        description=description,
     )
 
     # При автоматической обработке с помощью оркестратора это делать не нужно
