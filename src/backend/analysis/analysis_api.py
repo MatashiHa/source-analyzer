@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 
+from backend.analysis.analysis_dao import AnalysesDAO
 from backend.auth.auth_api import get_current_user
 from backend.feed.feed_dao import FeedsDAO
 
@@ -55,7 +56,6 @@ async def create_new_analysis(request: Request):
             """
             formated_list.append(formated_example)
         formated_examples = "".join(formated_list)
-    from backend.analysis.analysis_dao import AnalysesDAO
 
     await AnalysesDAO().add(
         name=name,
@@ -72,3 +72,27 @@ async def create_new_analysis(request: Request):
     # tokenizer = load_tokenizer()
     # embedding_model = load_embedding_model(tokenizer)
     # import_data(feeds_to_process, tokenizer, embedding_model, device)
+
+
+def get_analyses():
+    pass
+
+
+@router.get("/templates")
+async def get_templates(request: Request):
+    user = await get_current_user(request)
+    analysis_dao = AnalysesDAO()
+    users_analyses = await analysis_dao.find_all(user_id=user.user_id)
+    templates = [
+        {
+            "id": analysis.request_id,
+            "name": analysis.name,
+            "description": analysis.description,
+            "categories": [
+                x.strip() for x in analysis.category.split(",") if x.strip()
+            ],
+            "isDefault": False,
+        }
+        for analysis in users_analyses
+    ]
+    return {"templates": templates}

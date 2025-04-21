@@ -114,7 +114,7 @@ function Dashboard() {
           </div>
           <div className="flex justify-center mt-6">
             <Button variant="outline" asChild>
-              <Link href="/analysis/results">
+              <Link href="/monitoring">
                 {t("common.view")} {t("common.all")}
               </Link>
             </Button>
