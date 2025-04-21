@@ -102,7 +102,7 @@ export default function TemplatesPage() {
         : templates.filter((t) => !t.isDefault)
 
   return (
-    <div className="flex flex-col py-8 px-8">
+    <div className="flex flex-col items-center py-8 px-8">
       <div className="mb-6">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/" className="flex items-center">
@@ -118,12 +118,6 @@ export default function TemplatesPage() {
         </div>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Template
-            </Button>
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Template</DialogTitle>
@@ -200,7 +194,7 @@ export default function TemplatesPage() {
                   <CardDescription className="mt-1">{template.description}</CardDescription>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild className="mt-6">
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>

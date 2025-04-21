@@ -161,10 +161,6 @@ const translations: Translations = {
     en: "Actions",
     ru: "Действия",
   },
-  "common.sources": {
-    en: "Sources",
-    ru: "Источники",
-  },
   "common.new": {
     en: "New",
     ru: "Новый",
@@ -248,12 +244,12 @@ const translations: Translations = {
     ru: "Новый анализ",
   },
   "dashboard.scheduleMonitoring": {
-    en: "Shedule Monitoring",
-    ru: "Mониторинг по расписанию",
+    en: "Analyses Monitoring",
+    ru: "Mониторинг анализов",
   },
   "dashboard.createTemplate": {
-    en: "Create Template",
-    ru: "Создать шаблон",
+    en: "Check Templates",
+    ru: "Посмотреть шаблоны",
   },
   "dashboard.generateReport": {
     en: "Generate Report",
@@ -266,15 +262,11 @@ const translations: Translations = {
     ru: "Мониторинг",
   },
   "monitoring.subtitle": {
-    en: "Set up and manage automated source monitoring schedules",
+    en: "Set up and manage automated source analysis monitoring",
     ru: "Настройка и управление автоматическим мониторингом источников",
   },
-  "monitoring.createSchedule": {
-    en: "Create Schedule",
-    ru: "Создать расписание",
-  },
   "monitoring.allSchedules": {
-    en: "All Schedules",
+    en: "All Analyses",
     ru: "Все расписания",
   },
   "monitoring.activeSchedules": {
@@ -289,36 +281,25 @@ const translations: Translations = {
     en: "Error",
     ru: "С ошибками",
   },
-  "monitoring.runAllActive": {
-    en: "Run All Active",
-    ru: "Запустить все активные",
-  },
   "monitoring.newSchedule": {
-    en: "New Schedule",
-    ru: "Новое расписание",
+    en: "New Analysis",
+    ru: "Новый анализ",
   },
-  "monitoring.viewAllAlerts": {
-    en: "View All Alerts",
-    ru: "Просмотреть все оповещения",
-  },
-  "monitoring.generateReport": {
-    en: "Generate Report",
-    ru: "Сгенерировать отчет",
-  },
+
   "monitoring.noSchedulesFound": {
-    en: "No monitoring schedules found",
-    ru: "Расписания мониторинга не найдены",
+    en: "No Analysis found",
+    ru: "Анализы не найдены",
   },
   "monitoring.noSchedulesMatch": {
-    en: "No schedules match your search criteria",
-    ru: "Нет расписаний, соответствующих критериям поиска",
+    en: "No analysis match your search criteria",
+    ru: "Нет анализов, соответствующих критериям поиска",
   },
   "monitoring.noSchedulesYet": {
-    en: "You haven't created any monitoring schedules yet",
+    en: "You haven't created any analyses yet",
     ru: "Вы еще не создали расписания мониторинга",
   },
   "monitoring.createFirstSchedule": {
-    en: "Create Your First Schedule",
+    en: "Create Your First Analysis",
     ru: "Создать первое расписание",
   },
   "monitoring.nextRun": {
@@ -329,14 +310,6 @@ const translations: Translations = {
     en: "Total Sources",
     ru: "Всего источников",
   },
-  "monitoring.alertsDetected": {
-    en: "alerts detected",
-    ru: "обнаружено оповещений",
-  },
-  "monitoring.alertDetected": {
-    en: "alert detected",
-    ru: "обнаружено оповещение",
-  },
   "monitoring.viewDetails": {
     en: "View Details",
     ru: "Просмотреть детали",
@@ -346,16 +319,16 @@ const translations: Translations = {
     ru: "Исправить ошибку",
   },
   "monitoring.deleteSchedule": {
-    en: "Delete Monitoring Schedule",
-    ru: "Удалить расписание мониторинга",
+    en: "Delete Analysis",
+    ru: "Удалить анализ",
   },
   "monitoring.deleteConfirm": {
     en: "Are you sure you want to delete this monitoring schedule? This action cannot be undone.",
     ru: "Вы уверены, что хотите удалить это расписание мониторинга? Это действие нельзя отменить.",
   },
   "monitoring.deleteWarning": {
-    en: "Deleting this schedule will stop all future monitoring runs. Historical data from previous runs will remain available.",
-    ru: "Удаление этого расписания остановит все будущие запуски мониторинга. Исторические данные от предыдущих запусков останутся доступными.",
+    en: "Deleting this analysis will stop all future monitoring runs. Historical data from previous runs will remain available.",
+    ru: "Удаление этого анализа остановит все будущие запуски мониторинга. Исторические данные от предыдущих запусков останутся доступными.",
   },
 }
 

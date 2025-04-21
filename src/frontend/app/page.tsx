@@ -13,8 +13,8 @@ function Dashboard() {
     <div className="flex flex-col">
       <header className="border-b bg-background/95 backdrop-blur px-8">
         <div className="flex h-16 items-center justify-between py-4">
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm font-medium">
+          <nav className="flex items-center gap-6">
+            <Link href="/" className="text-sm font-bold">
               {t("common.dashboard")}
             </Link>
             <Link href="/templates" className="text-sm font-medium">

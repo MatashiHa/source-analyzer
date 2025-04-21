@@ -5,8 +5,7 @@ import { redirect, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, FileText } from "lucide-react"
-import axios from "axios"
-import Script from 'next/script'
+import api from "@/lib/api"
 import {YandexButton} from "@/components/yandex"
 
 
@@ -20,7 +19,7 @@ export default function AuthPage() {
     setError("")
     try {
       //получаем URL редиректа
-      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/${provider}`)
+      api.get(`/auth/${provider}`)
         .then(response => redirect(response.data.url))
     } catch (err) {
       setError(`Failed to login with ${provider}. Please try again.`)
@@ -36,7 +35,7 @@ export default function AuthPage() {
     
     if (code) {
       // Отправляем код на бэкенд для получения токена
-      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/github/callback?code=${code}`)
+      api.get(`/auth/github/callback?code=${code}`)
         .then(response => {
           console.log("User data:", response.data.user);
           localStorage.setItem("token", response.data.token.access_token);
@@ -48,7 +47,6 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 py-12 px-4 sm:px-6 lg:px-8">
-      <Script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"/>
       <div className="w-full max-w-md">
           <Card>
             <CardHeader>

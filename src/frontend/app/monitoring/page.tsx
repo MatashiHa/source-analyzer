@@ -222,7 +222,7 @@ export default function MonitoringPage() {
   }
 
   return (
-    <div className="py-8 px-8">
+    <div className="py-8 px-8 flex flex-col items-center">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/" className="flex items-center">
@@ -231,148 +231,18 @@ export default function MonitoringPage() {
           </Link>
         </Button>
       </div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">{t("monitoring.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("monitoring.subtitle")}</p>
-        </div>
 
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("monitoring.createSchedule")}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{t("monitoring.createSchedule")}</DialogTitle>
-              <DialogDescription>{t("monitoring.subtitle")}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="schedule-name">{t("common.name")}</Label>
-                <Input
-                  id="schedule-name"
-                  placeholder={t("common.name")}
-                  value={newScheduleName}
-                  onChange={(e) => setNewScheduleName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="schedule-description">{t("common.description")}</Label>
-                <Textarea
-                  id="schedule-description"
-                  placeholder={t("common.description")}
-                  value={newScheduleDescription}
-                  onChange={(e) => setNewScheduleDescription(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="schedule-frequency">{t("common.frequency")}</Label>
-                <Select value={newScheduleFrequency} onValueChange={setNewScheduleFrequency}>
-                  <SelectTrigger id="schedule-frequency">
-                    <SelectValue placeholder={t("common.frequency")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {frequencyOptions.map((option) => (
-                      <SelectItem key={option} value={option.toLowerCase()}>
-                        {t(`common.${option.toLowerCase()}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="schedule-keywords">{t("common.keywords")}</Label>
-                <Textarea
-                  id="schedule-keywords"
-                  placeholder={t("common.keywords")}
-                  value={newScheduleKeywords}
-                  onChange={(e) => setNewScheduleKeywords(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.sources")}</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {sourceTypeOptions.map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <Switch
-                        id={`source-type-${type.toLowerCase().replace(/\s+/g, "-")}`}
-                        checked={selectedSourceTypes.includes(type)}
-                        onCheckedChange={() => toggleSourceType(type)}
-                      />
-                      <Label htmlFor={`source-type-${type.toLowerCase().replace(/\s+/g, "-")}`} className="font-normal">
-                        {type}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* <div className="space-y-2">
-                <Label>{t("common.alerts")}</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="alert-new-sources" defaultChecked />
-                    <Label htmlFor="alert-new-sources" className="font-normal">
-                      {t("monitoring.alertsDetected")}
-                    </Label>
-                  </div>
-                </div>
-              </div> */}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                onClick={handleCreateSchedule}
-                disabled={!newScheduleName.trim() || !newScheduleFrequency || selectedSourceTypes.length === 0}
-              >
-                {t("common.create")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div className="flex w-full max-w-sm items-center space-x-2">
+      <div className="flex flex-col justify-between  mb-6">
+        <div className="flex w-full items-center space-x-3">
           <Input
             placeholder={`${t("common.search")}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-9"
           />
-          <Button size="sm" variant="ghost" className="h-9 px-2">
+          <Button size="sm" variant="ghost" className="h-9">
             <Search className="h-4 w-4" />
           </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" />
-            {t("common.filter")}
-          </Button>
-          <Select defaultValue="newest">
-            <SelectTrigger className="w-[140px] h-9">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="oldest">Oldest First</SelectItem>
-              <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-              <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-              <SelectItem value="next_run">Next Run Time</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -386,13 +256,13 @@ export default function MonitoringPage() {
       </Tabs>
 
       {filteredSchedules.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg bg-muted/20">
+        <div className="text-center py-12 border rounded-lg bg-muted/20 p-4">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">{t("monitoring.noSchedulesFound")}</h3>
           <p className="text-muted-foreground mb-6">
             {searchQuery ? t("monitoring.noSchedulesMatch") : t("monitoring.noSchedulesYet")}
           </p>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>{t("monitoring.createFirstSchedule")}</Button>
+          <Button onClick={() => router.push("/analysis/new")}>{t("monitoring.createFirstSchedule")}</Button>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -409,7 +279,7 @@ export default function MonitoringPage() {
                     <CardDescription className="mt-1">{schedule.description}</CardDescription>
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild className="mt-4">
+                    <DropdownMenuTrigger asChild className="mt-6">
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -506,7 +376,7 @@ export default function MonitoringPage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t pt-4 flex justify-between">
-                <Button variant="outline" size="sm" onClick={() => router.push(`/monitoring/${schedule.id}`)}>
+                <Button variant="outline" size="sm" onClick={() => router.push(`/analysis/results`)}>
                   <Eye className="mr-2 h-4 w-4" />
                   {t("monitoring.viewDetails")}
                 </Button>
