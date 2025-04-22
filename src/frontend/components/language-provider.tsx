@@ -213,6 +213,14 @@ const translations: Translations = {
     en: "System",
     ru: "Системная",
   },
+  "common.logout": {
+    en: "Logout",
+    ru: "Выйти"
+  },
+  "common.login": {
+    en: "Login",
+    ru: "Войти"
+  },
 
   // Dashboard
   "dashboard.title": {

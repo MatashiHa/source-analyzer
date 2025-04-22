@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import Link from "next/link"
 import { FileText } from "lucide-react"
+import { AuthButtons } from "@/components/auth-buttons"
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] })
 
@@ -57,6 +58,5 @@ export default function RootLayout({
 
 
 import './globals.css'
-import { AuthButtons } from "@/components/auth-buttons"
 import axios from "axios"
 
