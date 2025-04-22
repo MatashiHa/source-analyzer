@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft, Download, Share2, Bookmark, Filter, BarChart2, PieChart, LineChart, Cloud, Edit } from "lucide-react"
+import { ChevronLeft, Download, Share2, Bookmark, Filter, BarChart2, PieChart, LineChart, Cloud, Edit, CheckCircle2 } from "lucide-react"
 import { SourceTable } from "@/components/source-table"
 import { SourceClassification } from "@/components/source-classification"
 import { SourceVisualizations } from "@/components/source-visualizations"
@@ -19,6 +19,7 @@ export default function ResultsPage() {
   const [isMarkupEditorOpen, setIsMarkupEditorOpen] = useState(false)
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null)
   const [currentTab, setCurrentTab] = useState("visualizations");
+  const [labeledSources, setLabeledSources] = useState<string[]>([])
 
 
   const openMarkupEditor = (sourceId: string) => {
@@ -29,14 +30,22 @@ export default function ResultsPage() {
   const getImpactBadge = (level: string) => {
     switch (level) {
       case "high":
-        return <Badge className="bg-green-500">High Impact</Badge>
+        return <Badge className="bg-green-500">High</Badge>
       case "medium":
-        return <Badge className="bg-blue-500">Medium Impact</Badge>
+        return <Badge className="bg-blue-500">Medium</Badge>
       case "low":
-        return <Badge className="bg-gray-500">Low Impact</Badge>
+        return <Badge className="bg-gray-500">Low</Badge>
       default:
         return <Badge variant="outline">Unknown</Badge>
     }
+  }
+
+  const toggleLabeledStatus = (sourceId: string) => {
+    setLabeledSources((prev) => (prev.includes(sourceId) ? prev.filter((id) => id !== sourceId) : [...prev, sourceId]))
+  }
+
+  const isSourceLabeled = (sourceId: string) => {
+    return labeledSources.includes(sourceId)
   }
 
   const titlesToAnnotate = [
@@ -45,30 +54,35 @@ export default function ResultsPage() {
       title: "Climate Change Impact on Global Agriculture",
       impactLevel: "high",
       confidence: 0.92,
+      labeled: false,
     },
     {
       id: "2",
       title: "Rising Sea Levels: A Comprehensive Analysis",
       impactLevel: "high",
       confidence: 0.87,
+      labeled: false,
     },
     {
       id: "3",
       title: "The Economics of Climate Change Mitigation",
       impactLevel: "medium",
       confidence: 0.75,
+      labeled: false,
     },
     {
       id: "4",
       title: "Climate Policy Developments in the EU",
       impactLevel: "medium",
       confidence: 0.68,
+      labeled: false,
     },
     {
       id: "5",
       title: "Public Perception of Climate Change",
       impactLevel: "low",
       confidence: 0.55,
+      labeled: false,
     },
   ]
 
@@ -187,10 +201,22 @@ export default function ResultsPage() {
                               </div>
                             </div>
                           </div>
-                          <Button variant="outline" className="ml-2" size="sm" onClick={() => openMarkupEditor(item.id)}>
-                            <Edit className="h-4 w-4 mr-1" />
-                            Annotate
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" className="ml-2" size="sm" onClick={() => openMarkupEditor(item.id)}>
+                              <Edit className="h-4 w-4 mr-1" />
+                              Annotate
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => toggleLabeledStatus(item.id)}
+                              className={`${
+                                isSourceLabeled(item.id)
+                                  ? "bg-green-500 hover:bg-green-400"
+                                  : ""
+                              }`}
+                              >
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              {isSourceLabeled(item.id) ? "Labeled" : "Not Labeled"}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
