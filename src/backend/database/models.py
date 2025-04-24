@@ -29,9 +29,7 @@ class User(Base):
     login: Mapped[str] = mapped_column(String(100))
     # OAuth2-поля (пока один провайдер на пользователя)
     provider: Mapped[str] = mapped_column(String(50))  # google, github и т.д.
-    provider_id: Mapped[str] = mapped_column(
-        String(255), unique=True
-    )  # ID у провайдера
+    provider_id: Mapped[str] = mapped_column(String(255))  # ID у провайдера
     # Связь многие-ко-многим с Feed (через ассоциативную таблицу)
     feeds: Mapped[list["Feed"]] = relationship(
         "Feed",
@@ -91,6 +89,24 @@ class Article(Base):
     )
 
 
+class Document(Base):
+    __tablename__ = "documents"
+    document_id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    url: Mapped[str] = mapped_column()
+    description: Mapped[str | None] = mapped_column(String(600))
+    embeddings = mapped_column(Vector(768))
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id", ondelete="CASCADE")
+    )
+    llm_conns: Mapped[list["LLMConnection"]] = relationship(
+        "LLMConnection",
+        backref="article",
+        lazy="selectin",
+    )
+
+
 class AnalysisRequest(Base):
     __tablename__ = "analyses"
     request_id: Mapped[int] = mapped_column(primary_key=True)
@@ -113,7 +129,6 @@ class AnalysisRequest(Base):
 class LLMConnection(Base):
     __tablename__ = "llm_conns"
     conn_id: Mapped[int] = mapped_column(primary_key=True)
-    # document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.document_id"))
     response = mapped_column(JSONB, nullable=True)  # ответ модели
     is_labeled: Mapped[bool] = mapped_column(
         default=False
@@ -122,14 +137,12 @@ class LLMConnection(Base):
     request_id: Mapped[int] = mapped_column(
         ForeignKey("analyses.request_id", ondelete="CASCADE")
     )
-    article_id: Mapped[int] = mapped_column(
+    document_id: Mapped[int | None] = mapped_column(
+        ForeignKey("documents.document_id", ondelete="CASCADE")
+    )
+    article_id: Mapped[int | None] = mapped_column(
         ForeignKey("articles.article_id", ondelete="CASCADE")
     )
-    # document: Mapped["Documents"] = relationship(back_populates="llm_conn")
-
-
-# class Template(Base): # затравка на будущее
-#     pass
 
 
 # Храниим сессии пользователей

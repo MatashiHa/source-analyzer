@@ -1,10 +1,6 @@
 from fastapi import APIRouter
 
-from backend.analysis.analysis_dao import AnalysesDAO
-
-from .feed_dao import FeedsDAO
-
-router = APIRouter(prefix="/feed", tags=["Feed"])
+router = APIRouter(prefix="/document", tags=["Document"])
 
 # @router.post("/create")
 # async def create_feed(url: str, title: str | None, description: str | None):
@@ -13,22 +9,17 @@ router = APIRouter(prefix="/feed", tags=["Feed"])
 #     return {"message": f"Feed {url} was added!"}
 
 
-@router.post("/import")
-async def import_data():
-    from crawler.rss_crawler import import_data
+# импорт текстов веб-страниц
+# @router.post("/import")
+# async def import_data():
+#     from crawler.rss_crawler import import_data
 
-    urls = await FeedsDAO.get_all_feed_ids_with_urls()
+#     urls = await DocumentsDAO.get_all_feed_ids_with_urls()
 
-    count = await import_data(urls)
-    return {"message": f"{count} news was loaded!"}
-
-
-class Args:
-    feed_id: int
-    req_id: int
+#     count = await import_data(urls)
+#     return {"message": f"{count} news was loaded!"}
 
 
-# рут используется планировщиком
 @router.post("/process")
 async def process(req_id: int, feed_id: int):
     from rag.processor import process

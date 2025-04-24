@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from backend.user_dao import UsersDAO
+from backend.dao.user_dao import UsersDAO
 
 load_dotenv()
 

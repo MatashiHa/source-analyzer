@@ -11,12 +11,14 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 async def create_new_analysis(request: Request):
     data = await request.json()
     name = data["name"]
-    description = data["description"]
     type = data["type"]
     categories = data["categories"]
-    examples = data.get("examples")
     source_type = data["source_type"]
-    urls = data["urls"]
+    # необязательные поля получаем через get
+    description = data.get("description")
+    examples = data.get("examples")
+    urls = data.get("urls")
+
     user = await get_current_user(request)
     feed_dao = FeedsDAO()
 
