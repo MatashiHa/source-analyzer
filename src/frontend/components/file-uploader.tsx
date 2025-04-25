@@ -5,18 +5,23 @@ import type React from "react"
 import { extractRawText } from "mammoth"
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { Button } from "@/components/ui/button"
-import { Upload, X, FileText, File, Image, Loader2 } from "lucide-react"
-import api from "@/lib/api"
+import { Upload, X, FileText, File, Image, Loader2, CheckCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 
+interface FileUploaderProps {
+  onTextExtracted?: (text: string) => void;
+  onUploadError?: (error: Error) => void;
+}
 
-export function FileUploader() {
+export function FileUploader({onTextExtracted, onUploadError}: FileUploaderProps) {
+  const router = useRouter()
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isMounted, setIsMounted] = useState(false)
-  const [message, setMessage] = useState({text: "", type: ""})
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadComplete, setUploadComplete] = useState(false);
 
   // Ensure component is mounted before any DOM interactions
   useEffect(() => {
@@ -24,6 +29,78 @@ export function FileUploader() {
     return () => setIsMounted(false)
   }, [])
 
+
+
+  
+  const extractText = async (file: File): Promise<string> => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    try {
+      if (extension === 'txt') {
+        return await readTextFile(file);
+      } else if (extension === 'docx') {
+        return await readDocxFile(file);
+      } else if (extension === 'pdf') {
+        return await readPdfFile(file);
+      } else {
+        throw new Error('Unsupported data format.');
+      }
+    } catch (error) {
+      console.error('Error extracting text:', error);
+      throw error;
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!files) {
+      return;
+    }
+    setIsLoading(true);
+    setUploadComplete(false);
+    
+    try {
+      // Извлечение текста из файла
+      const fileText = await extractText(files[0]);
+      onTextExtracted?.(fileText)
+      setUploadComplete(true);
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      onUploadError?.(error instanceof Error ? error: new Error('Upload failed'))
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const readTextFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = (e) => reject(new Error('Error occured while reading file'));
+      reader.readAsText(file);
+    });
+  };
+
+  const readDocxFile = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await extractRawText({ arrayBuffer });
+    return result.value;
+  };
+
+  const readPdfFile = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const loadingTask = getDocument(arrayBuffer);
+    const pdf = await loadingTask.promise
+    
+    let text = '';
+    for (let i = 0; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map((item: any) => item.str).join(' ') + '\n';
+    }
+
+    return text;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -91,93 +168,6 @@ export function FileUploader() {
     }
   }
 
-  const extractText = async (file: File): Promise<string> => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
-
-    try {
-      if (extension === 'txt') {
-        return await readTextFile(file);
-      } else if (extension === 'docx') {
-        return await readDocxFile(file);
-      } else if (extension === 'pdf') {
-        return await readPdfFile(file);
-      } else {
-        throw new Error('Unsupported data format.');
-      }
-    } catch (error) {
-      console.error('Error extracting text:', error);
-      throw error;
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!files) {
-      setMessage({ text: 'Please, choose files', type: 'error' });
-      return;
-    }
-
-    setIsLoading(true);
-    setMessage({ text: '', type: '' });
-
-    try {
-      // Извлечение текста из файла
-      const fileText = await extractText(files[0]);
-      // setPreviewText(fileText.substring(0, 500) + (fileText.length > 500 ? '...' : ''));
-
-      // Отправка на сервер
-      const response = await api.post('/documents/process', {
-        filename: files[0].name,
-        content: fileText,
-        fileType: files[0].type
-      });
-
-      setMessage({ 
-        text: 'File data is loaded to DB!', 
-        type: 'success' 
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      setMessage({ 
-        text: error instanceof Error ? error.message : 'Error occured while loading the file', 
-        type: 'error' 
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const readTextFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
-      reader.onerror = (e) => reject(new Error('Error occured while reading file'));
-      reader.readAsText(file);
-    });
-  };
-
-  const readDocxFile = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await extractRawText({ arrayBuffer });
-    return result.value;
-  };
-
-  const readPdfFile = async (file: File): Promise<string> => {
-    // const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf');
-    // pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = getDocument(arrayBuffer);
-    const pdf = await loadingTask.promise
-    
-    let text = '';
-    for (let i = 0; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      text += content.items.map((item: any) => item.str).join(' ') + '\n';
-    }
-
-    return text;
-  };
-
   if (!isMounted) {
     return <div className="h-[200px] bg-muted/40 rounded-lg flex items-center justify-center">Loading uploader...</div>
   }
@@ -199,9 +189,9 @@ export function FileUploader() {
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          multiple
+          // multiple
           accept=".txt,.pdf,.docx"
-          className="hidden"
+          className="absolute opacity-0"
         />
         <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-1">Upload Files</h3>
@@ -237,6 +227,7 @@ export function FileUploader() {
                   onClick={(e) => {
                     e.stopPropagation()
                     handleRemoveFile(index)
+                    router.refresh()
                   }}
                   className="h-8 w-8"
                 >
@@ -245,15 +236,21 @@ export function FileUploader() {
               </div>
             ))}
           </div>
+          {/* TODO: перенести это добро на страницу processing */}
           <Button
             onClick={handleUpload}
-            disabled={isLoading || files.length === 0}
+            disabled={isLoading || files.length === 0 || uploadComplete}
             className="w-full mt-4"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Uploading...
+              </>
+            ) : uploadComplete ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Uploaded!
               </>
             ) : (
               'Upload Files to Database'

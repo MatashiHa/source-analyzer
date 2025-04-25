@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+# from fastapi import APIRouter
 
-router = APIRouter(prefix="/document", tags=["Document"])
+# router = APIRouter(prefix="/document", tags=["Document"])
 
 # @router.post("/create")
 # async def create_feed(url: str, title: str | None, description: str | None):
@@ -20,20 +20,20 @@ router = APIRouter(prefix="/document", tags=["Document"])
 #     return {"message": f"{count} news was loaded!"}
 
 
-@router.post("/process")
-async def process(req_id: int, feed_id: int):
-    from rag.processor import process
+# @router.post("/process")
+# async def process(req_id: int, feed_id: int):
+#     from rag.processor import process
 
-    analysis = await AnalysesDAO().find_one_or_none_by_id(req_id)
-    if not analysis:
-        return Exception("Analysis not found")
+#     analysis = await AnalysesDAO().find_one_or_none_by_id(req_id)
+#     if not analysis:
+#         return Exception("Analysis not found")
 
-    feed = await FeedsDAO().find_one_or_none_by_id(feed_id)
-    if not feed:
-        return Exception("Feed was not found")
+#     feed = await FeedsDAO().find_one_or_none_by_id(feed_id)
+#     if not feed:
+#         return Exception("Feed was not found")
 
-    args = Args()
-    args.feed_id = feed.feed_id
-    args.req_id = analysis.request_id
-    await process(args)
-    return {"message": "Processing started!"}
+#     args = Args()
+#     args.feed_id = feed.feed_id
+#     args.req_id = analysis.request_id
+#     await process(args)
+#     return {"message": "Processing started!"}

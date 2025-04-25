@@ -74,9 +74,9 @@ class Article(Base):
     __tablename__ = "articles"
     article_id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(String(600))
     link: Mapped[str] = mapped_column(unique=True)
     pub_date: Mapped[datetime.datetime] = mapped_column()
-    description: Mapped[str | None] = mapped_column(String(600))
     embeddings = mapped_column(Vector(768))
 
     feed_id: Mapped[int] = mapped_column(
@@ -93,8 +93,9 @@ class Document(Base):
     __tablename__ = "documents"
     document_id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
-    url: Mapped[str] = mapped_column()
     description: Mapped[str | None] = mapped_column(String(600))
+    content: Mapped[str] = mapped_column()
+    url: Mapped[str] = mapped_column()
     embeddings = mapped_column(Vector(768))
 
     user_id: Mapped[int] = mapped_column(
@@ -102,7 +103,7 @@ class Document(Base):
     )
     llm_conns: Mapped[list["LLMConnection"]] = relationship(
         "LLMConnection",
-        backref="article",
+        backref="document",
         lazy="selectin",
     )
 
@@ -111,11 +112,11 @@ class AnalysisRequest(Base):
     __tablename__ = "analyses"
     request_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(200), default="New Analysis")
+    description: Mapped[str | None] = mapped_column(String(600))
     category: Mapped[str] = mapped_column(String(100))
     examples: Mapped[str | None] = mapped_column(String(400))
     is_active: Mapped[bool] = mapped_column(default=True)
     analysis_type: Mapped[str] = mapped_column()
-    description: Mapped[str | None] = mapped_column(String(600))
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.user_id", ondelete="CASCADE")
     )

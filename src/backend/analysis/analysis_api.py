@@ -11,13 +11,15 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 async def create_new_analysis(request: Request):
     data = await request.json()
     name = data["name"]
-    type = data["type"]
     categories = data["categories"]
-    source_type = data["source_type"]
+    type = data["type"]  # single or monitoring
+    source_type = data["source_type"]  # links or files
     # необязательные поля получаем через get
     description = data.get("description")
     examples = data.get("examples")
     urls = data.get("urls")
+    docs = data.get("docs")
+    print(docs)
 
     user = await get_current_user(request)
     feed_dao = FeedsDAO()
@@ -33,8 +35,11 @@ async def create_new_analysis(request: Request):
                 )
             else:
                 await feed_dao.add(url=url)
-
             # feeds_to_process.append((feed.feed_id, feed.url)) пока обработка идёт только с помощью планировщика
+
+    # if source_type == "files" and type == "single":
+    #     files =
+
     if examples:
         examples = examples.split(";")
         import re

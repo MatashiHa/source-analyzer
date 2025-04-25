@@ -10,34 +10,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileUploader } from "@/components/file-uploader"
 import { ChevronLeft } from "lucide-react"
-// import axios from "axios"
-// axios.defaults.withCredentials=true
 import api from "@/lib/api"
 export default function NewAnalysisPage() {
   const router = useRouter()
   const [analysisType, setAnalysisType] = useState("single")
   const [sourceType, setSourceType] = useState("files")
   const [template, setTemplate] = useState(true)
+  const [extractedTexts, setExtractedTexts] = useState<{text: string}[]>([]);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const formData = new FormData(e.currentTarget)
+      
+      // Добавляем все извлеченные тексты в FormData
+      extractedTexts.forEach((item) => {
+        formData.append(`docs`, item.text);
+      });
+
       const response = await api.post(`/analysis/create`, formData)
       if (!response) throw new Error("Ошибка отправки");
-      // console.log(formData)
-      // alert("Данные отправлены!");
     } catch (error) {
       console.error(error);
     }
-    // In a real app, this would process the form data
     router.push("/analysis/processing")
   }
+  const handleTextExtracted = (text: string) => {
+    setExtractedTexts(prev => [...prev, { text }]);
+  };
+  // const handleTextExtracted = (text: string, fileName: string) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     content: prev.content + '\n\n' + text, // Добавляем к основному содержимому
+  //     attachments: [...prev.attachments, { fileName, text }] // Сохраняем как вложение
+  //   }));
+  // };
+
+  const handleUploadError = (error: Error) => {
+    console.error('Upload error:', error);
+    alert(`Error: ${error.message}`);
+  };
 
   return (
     <div className="flex flex-col items-center py-8 max-w-xl mx-auto">
@@ -110,7 +126,7 @@ export default function NewAnalysisPage() {
                 <CardDescription>Choose classes for analysis from:</CardDescription>
                 <div className="grid gap-3">
                   <Label htmlFor="analysis-categories">Analysis Categories</Label>
-                  <Input name="categories" id="analysis-categories" onInput={(e) => setTemplate(e.currentTarget.value === '')} placeholder="Enter a category or classes separated by comma for analysis" />
+                  <Input name="categories" id="analysis-categories" onInput={(e) => setTemplate(e.currentTarget.value === '')} placeholder="Enter a category or classes separated by comma for analysis"/>
                 </div>
 
                 <CardDescription>or...</CardDescription>
@@ -192,7 +208,7 @@ export default function NewAnalysisPage() {
                   {sourceType === "files" && analysisType === "single" ? (
                     <div className="grid gap-3">
                       <Label>Upload Documents</Label>
-                      <FileUploader/>
+                      <FileUploader onTextExtracted={handleTextExtracted} onUploadError={handleUploadError}/>
                       <p className="text-xs text-muted-foreground">
                         Supported formats: .txt, .docx, .pdf (Max 10MB per file)
                       </p>
@@ -215,7 +231,16 @@ export default function NewAnalysisPage() {
             <Button variant="outline" type="button" onClick={() => router.push("/")}>
               Cancel
             </Button>
-            <Button type="submit">Start Analysis</Button>
+            { analysisType === "single" ? (
+              <Button 
+                type="submit" 
+                disabled={extractedTexts.length === 0}
+              >
+                  Start Analysis
+              </Button>
+            ) : (
+              <Button type="submit">Start Analysis</Button>
+            )}
           </div>
         </div>
       </form>
