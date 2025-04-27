@@ -94,8 +94,8 @@ class Document(Base):
     document_id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(String(600))
-    content: Mapped[str] = mapped_column()
-    url: Mapped[str] = mapped_column()
+    content: Mapped[str | None] = mapped_column()
+    url: Mapped[str | None] = mapped_column()
     embeddings = mapped_column(Vector(768))
 
     user_id: Mapped[int] = mapped_column(

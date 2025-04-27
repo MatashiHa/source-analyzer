@@ -104,8 +104,18 @@ export function FileUploader({onTextExtracted, onUploadError}: FileUploaderProps
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files)
-      setFiles((prev) => [...prev, ...newFiles])
+      const selectedFile = e.target.files[0]
+      // Проверяем размер файла (1 МБ = 1024 * 1024 байт)
+      const maxSize = 1024 * 1024; // 1 МБ
+      if (selectedFile.size > maxSize) {
+        alert("File is too large. Only files under 1 MB are supported.");
+        e.target.value = ""; // Сбрасываем выбор файла
+        return;
+      }
+      setFiles([selectedFile])
+      // пока не обрабатываем множество файлов
+      // const newFiles = Array.from(e.target.files)
+      // setFiles((prev) => [...prev, ...newFiles])
     }
   }
 

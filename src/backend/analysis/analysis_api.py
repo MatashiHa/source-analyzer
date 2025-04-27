@@ -2,7 +2,34 @@ from fastapi import APIRouter, Request
 
 from backend.analysis.analysis_dao import AnalysesDAO
 from backend.auth.auth_api import get_current_user
+from backend.document.document_dao import DocumentsDAO
 from backend.feed.feed_dao import FeedsDAO
+
+
+def examples_formatting(examples: str, categories):
+    examples = examples.split(";")
+    import re
+
+    formated_list = []
+    for example in examples:
+        example = example.strip()
+        result = re.search(
+            r"<Text>(?P<text>.+?)<Prediction>(?P<prediction>.+?)$", example
+        )
+        if not result:
+            continue
+        text, prediction = (
+            result.group("text").strip(),
+            result.group("prediction").strip(),
+        )
+        formated_example = f"""
+        Category: {categories},
+        Text: {text},
+        predicted_class: {prediction}
+        """
+        formated_list.append(formated_example)
+    return "".join(formated_list)
+
 
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
@@ -10,21 +37,21 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 @router.post("/create")
 async def create_new_analysis(request: Request):
     data = await request.json()
-    name = data["name"]
-    categories = data["categories"]
-    type = data["type"]  # single or monitoring
-    source_type = data["source_type"]  # links or files
+    name: str = data["name"]
+    categories: str = data["categories"]
+    analysis_type: str = data["type"]  # single or monitoring
+    source_type: str = data["source_type"]  # links or files
     # необязательные поля получаем через get
-    description = data.get("description")
-    examples = data.get("examples")
-    urls = data.get("urls")
-    docs = data.get("docs")
-    print(docs)
+    description: str = data.get("description")
+    examples: str = data.get("examples")
+    urls: list = data.get("urls")
+    document: str = data.get("docs")
 
     user = await get_current_user(request)
     feed_dao = FeedsDAO()
 
-    if source_type == "links" and type == "monitoring":
+    # обработка фидов запускается по расписанию планировщиком
+    if source_type == "links" and analysis_type == "monitoring":
         urls = urls.split()
         # feeds_to_process = []
         for url in urls:
@@ -35,41 +62,26 @@ async def create_new_analysis(request: Request):
                 )
             else:
                 await feed_dao.add(url=url)
-            # feeds_to_process.append((feed.feed_id, feed.url)) пока обработка идёт только с помощью планировщика
 
-    # if source_type == "files" and type == "single":
-    #     files =
-
-    if examples:
-        examples = examples.split(";")
-        import re
-
-        formated_list = []
-        for example in examples:
-            example = example.strip()
-            result = re.search(
-                r"<Text>(?P<text>.+?)<Prediction>(?P<prediction>.+?)$", example
+    # одноразовая обработка текстов запускается сразу
+    if analysis_type == "single":
+        if source_type == "files":
+            title = document[:50]  # берём за заголовок до 50 первых символов
+            await DocumentsDAO().add(
+                title=title, content=document, user_id=user.user_id
             )
-            if not result:
-                continue
-            text, prediction = (
-                result.group("text").strip(),
-                result.group("prediction").strip(),
-            )
-            formated_example = f"""
-            Category: {categories},
-            Text: {text},
-            predicted_class: {prediction}
-            """
-            formated_list.append(formated_example)
-        formated_examples = "".join(formated_list)
+
+        if source_type == "links":
+            pass  # TODO
+
+    formated_examples = examples_formatting(examples, categories) if examples else ""
 
     await AnalysesDAO().add(
         name=name,
         category=categories,
         examples=formated_examples,
         user_id=user.user_id,
-        analysis_type=type,
+        analysis_type=analysis_type,
         description=description,
     )
 

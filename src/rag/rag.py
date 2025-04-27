@@ -2,12 +2,10 @@ import json
 
 import pandas as pd
 import torch
-from sqlalchemy import select
 from templates import context, template
 from transformers import pipeline
 
-from backend.database.database import async_session_maker
-from backend.database.models import AnalysisRequest, Article, LLMConnection
+from backend.dao.article_dao import ArticlesDAO
 from crawler.processor import get_embeddings
 
 torch.random.manual_seed(42)
@@ -20,40 +18,13 @@ torch.random.manual_seed(42)
 # классифицирует как low хотя вероятность не наибольшая среди классов, иногда интерпретирует русские слова на английском и выдаёт мусор
 
 
-async def get_relevant_data_from_articles(
-    query_embedding, max_entries=5, choose_labeled=False
-):
-    async with async_session_maker() as session:
-        stmt = (
-            select(
-                Article.title,
-                Article.description,
-                AnalysisRequest.category,
-                LLMConnection.response,
-            )
-            .join(LLMConnection, Article.article_id == LLMConnection.article_id)
-            .join(
-                AnalysisRequest, LLMConnection.request_id == AnalysisRequest.request_id
-            )
-            # .where(
-            #     LLMConnection.labeled == True,
-            # )
-            .order_by(Article.embeddings.cosine_distance(query_embedding))
-            .limit(max_entries)
-        )
-        if choose_labeled:
-            stmt = stmt.where(LLMConnection.labeled == True)  # noqa
-
-        stmt = stmt.order_by(Article.embeddings.cosine_distance(query_embedding)).limit(
-            max_entries
-        )
-
-        result = await session.execute(stmt)
-        return result.all()
-
-
 async def rag_processing(
-    tokenizer: any, model: any, embedding_model: any, device: str, request: dict
+    tokenizer: any,
+    model: any,
+    embedding_model: any,
+    device: str,
+    request: dict,
+    query_embedding: any,
 ) -> str:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
@@ -65,12 +36,13 @@ async def rag_processing(
         request (_type_): list containig category and text from the source
     """
 
-    query_embedding, _ = get_embeddings(
-        tokenizer=tokenizer,
-        model=embedding_model,
-        device=device,
-        df=pd.DataFrame({request["title"]}),
-    )
+    if not query_embedding:
+        query_embedding, _ = get_embeddings(
+            tokenizer=tokenizer,
+            model=embedding_model,
+            device=device,
+            df=pd.DataFrame({request["text"]}),
+        )
     query_embedding = query_embedding.tolist()[0]
     # print(shape)
     # if shape != 768:
@@ -79,18 +51,19 @@ async def rag_processing(
 
     # making async request to database with set condition to get 5 max relevant examples
 
-    result = await get_relevant_data_from_articles(query_embedding=query_embedding)
+    result = await ArticlesDAO.get_relevant_data_from_articles(
+        query_embedding=query_embedding
+    )
     combined_results = [
-        f"<title>: {title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
+        f"<title>:{title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
         if response
         else f"{title};{description}"
         for title, description, category, response in result
     ]
     rag_query = " ".join(combined_results)
-    # rag_query = " ".join(result)
 
     query_template = template.format(
-        context=rag_query, category=request["category"], text=request["title"]
+        context=rag_query, category=request["category"], text=request["text"]
     )
 
     # добавляем в контекст вопрос

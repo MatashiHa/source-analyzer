@@ -26,16 +26,26 @@ async def process(
     # тут просто запускаем процесс обработки данных в БД до тех пор пока есть неразмеченные данные
     async with async_session_maker() as session:
         analysis = await AnalysesDAO.find_one_or_none_by_id(args.req_id)
-        entries = await ArticlesDAO.find_articles_without_analysis(
-            args.feed_id, args.req_id
-        )
         connections_to_process = []
-        for entry in entries:
-            conn = LLMConnection(article_id=entry.article_id, requset_id=args.req_id)
-            session.add(conn)
-            connections_to_process.append(conn)
-        await session.commit()
-        for conn in connections_to_process:
+        texts_to_process = []
+        if hasattr(args, "feed_id"):
+            entries = await ArticlesDAO.find_articles_without_analysis(
+                args.feed_id, args.req_id
+            )
+
+            for entry in entries:
+                conn = LLMConnection(
+                    article_id=entry.article_id, requset_id=args.req_id
+                )
+                session.add(conn)
+                connections_to_process.append(conn)
+                texts_to_process.append(entry.title)
+            await session.commit()
+
+        if hasattr(args, "documenent_id"):
+            pass
+
+        for conn, text in zip(connections_to_process, texts_to_process):
             # print((await llm_conn.awaitable_attrs.article).title)
             try:
                 response = await rag_processing(
@@ -45,7 +55,7 @@ async def process(
                     device=device,
                     request={
                         "category": analysis.category,
-                        "title": (await conn.awaitable_attrs.article).title,
+                        "text": text,
                     },
                 )
                 print(response)

@@ -156,7 +156,7 @@ class RSSCrawler:
             col_name="title",
             device=device,
         )
-        filtered_df.loc[:, "embeddings"] = list(df_with_embeddings.cpu().numpy())
+        filtered_df.loc[:, "embeddings"] = list(df_with_embeddings.numpy())
         print("data processed")
 
         async with async_session_maker() as session:

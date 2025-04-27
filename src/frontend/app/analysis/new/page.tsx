@@ -210,7 +210,7 @@ export default function NewAnalysisPage() {
                       <Label>Upload Documents</Label>
                       <FileUploader onTextExtracted={handleTextExtracted} onUploadError={handleUploadError}/>
                       <p className="text-xs text-muted-foreground">
-                        Supported formats: .txt, .docx, .pdf (Max 10MB per file)
+                        Supported formats: .txt, .docx, .pdf (Max 1MB per file)
                       </p>
                     </div>
                   ) : (
@@ -231,7 +231,7 @@ export default function NewAnalysisPage() {
             <Button variant="outline" type="button" onClick={() => router.push("/")}>
               Cancel
             </Button>
-            { analysisType === "single" ? (
+            { sourceType === "files" && analysisType === "single"  ? (
               <Button 
                 type="submit" 
                 disabled={extractedTexts.length === 0}
