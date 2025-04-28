@@ -66,7 +66,8 @@ async def create_new_analysis(request: Request):
     # одноразовая обработка текстов запускается сразу
     if analysis_type == "single":
         if source_type == "files":
-            title = document[:50]  # берём за заголовок до 50 первых символов
+            title = document[:50]
+            description = document[:500]
             await DocumentsDAO().add(
                 title=title, content=document, user_id=user.user_id
             )

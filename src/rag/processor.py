@@ -28,7 +28,9 @@ async def process(
         analysis = await AnalysesDAO.find_one_or_none_by_id(args.req_id)
         connections_to_process = []
         texts_to_process = []
+        embeddings = []
         if hasattr(args, "feed_id"):
+            src_type = "feed"
             entries = await ArticlesDAO.find_articles_without_analysis(
                 args.feed_id, args.req_id
             )
@@ -40,12 +42,24 @@ async def process(
                 session.add(conn)
                 connections_to_process.append(conn)
                 texts_to_process.append(entry.title)
+                embeddings.append(entry.embeddings)
             await session.commit()
 
-        if hasattr(args, "documenent_id"):
-            pass
+        if hasattr(args, "document_id"):
+            src_type = "document"
+            # 1-й способ: для conn делим докумнент на отрывки,каждый отрывок берём и в цикле обрабатываем, а результаты обработки складываем в один response.
+            # 2-й способ: для каждого отрывка создаём свой conn и обрабатываем в цикле, после чего результаты обработки кладём в один conn -- пока нет смысла без поля embeddings внутри conn.
+            # for entry in entries:
+            conn = LLMConnection(document_id=args.document_id, requset_id=args.req_id)
+            session.add(conn)
+            connections_to_process.append(conn)
+            texts_to_process.append(entry.content)
+            embeddings.append(entry.embeddings)
+            await session.commit()
 
-        for conn, text in zip(connections_to_process, texts_to_process):
+        for conn, text, embedding in zip(
+            connections_to_process, texts_to_process, embeddings
+        ):
             # print((await llm_conn.awaitable_attrs.article).title)
             try:
                 response = await rag_processing(
@@ -57,18 +71,17 @@ async def process(
                         "category": analysis.category,
                         "text": text,
                     },
+                    query_embedding=embedding,
+                    src_type=src_type,
                 )
-                print(response)
+                # print(response)
 
                 response = remove_json_markdown(response)
                 if is_valid_json(response):
                     conn.response = response
-
-                # await session.commit()
             except Exception as e:
                 print(e)
                 conn.response = {"error": str(e)}
-                # await session.commit()
             finally:
                 await session.commit()
                 await session.refresh(conn)  # Получить актуальное `updated_at`

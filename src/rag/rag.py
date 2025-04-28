@@ -6,12 +6,10 @@ from templates import context, template
 from transformers import pipeline
 
 from backend.dao.article_dao import ArticlesDAO
+from backend.document.document_dao import DocumentsDAO
 from crawler.processor import get_embeddings
 
 torch.random.manual_seed(42)
-
-# задача состоит в том, чтобы классифицировать данные источников, для этого пользователь отправляет запрос в котором представлен параметр по которому проводиться классификация,
-# далее система должна классифицировать текст по трём классам проявления этого параметра: низкое, среднее, высокое. Для более точного запроса нужно подавать в контекст пары запрос-ответ согласно вопросу пользователя.
 
 # Ошибки в обработке: одни и те же слова в нескольких классах, иногда путает class с level (при установке predicted_level в примере), появление больших повторений в в одном классе
 # из-за чего не хватает токенов для полного ответа, неточность в классификации, пытается отнести к классу даже то что не имеет значения, иногда отсутствуют вероятности,
@@ -25,6 +23,7 @@ async def rag_processing(
     device: str,
     request: dict,
     query_embedding: any,
+    src_type: str,
 ) -> str:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
@@ -50,23 +49,36 @@ async def rag_processing(
     #     query_embedding = projection(query_embedding)
 
     # making async request to database with set condition to get 5 max relevant examples
+    if src_type == "feed":
+        result = await ArticlesDAO.get_relevant_data_from_articles(
+            query_embedding=query_embedding
+        )
+        # <text>:{title}. {description};
+        combined_results = [
+            f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
+            if response
+            else f"{title}.{description}"
+            for title, description, category, response in result
+        ]
+        rag_query = " ".join(combined_results)
 
-    result = await ArticlesDAO.get_relevant_data_from_articles(
-        query_embedding=query_embedding
-    )
-    combined_results = [
-        f"<title>:{title};<description>:{description};<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
-        if response
-        else f"{title};{description}"
-        for title, description, category, response in result
-    ]
-    rag_query = " ".join(combined_results)
+    if src_type == "document":
+        result = await DocumentsDAO.get_relevant_data_from_documents(
+            query_embedding=query_embedding
+        )
+        combined_results = [
+            f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
+            if response
+            else f"{title}.{description}"
+            for title, description, category, response in result
+        ]
+        rag_query = " ".join(combined_results)
 
     query_template = template.format(
         context=rag_query, category=request["category"], text=request["text"]
     )
 
-    # добавляем в контекст вопрос
+    # добавляем запрос к контексту
     context.append({"role": "user", "content": query_template})
 
     pipe = pipeline(
@@ -82,5 +94,4 @@ async def rag_processing(
     }
 
     output = pipe(context, **generation_args)
-    # sometimes output might contain json markdown
     return output[0]["generated_text"]
