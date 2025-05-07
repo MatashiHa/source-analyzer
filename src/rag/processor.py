@@ -2,6 +2,7 @@ from backend.analysis.analysis_dao import AnalysesDAO
 from backend.dao.article_dao import ArticlesDAO
 from backend.database.database import async_session_maker
 from backend.database.models import LLMConnection
+from backend.document.document_dao import DocumentsDAO
 from models.models import device, embedding_model, model, tokenizer
 from rag.rag import rag_processing
 from utils import is_valid_json, remove_json_markdown
@@ -48,13 +49,15 @@ async def process(
         if hasattr(args, "document_id"):
             src_type = "document"
             # 1-й способ: для conn делим докумнент на отрывки,каждый отрывок берём и в цикле обрабатываем, а результаты обработки складываем в один response.
-            # 2-й способ: для каждого отрывка создаём свой conn и обрабатываем в цикле, после чего результаты обработки кладём в один conn -- пока нет смысла без поля embeddings внутри conn.
-            # for entry in entries:
+
+            document = DocumentsDAO().find_one_or_none_by_id(
+                document_id=args.document_id
+            )
             conn = LLMConnection(document_id=args.document_id, requset_id=args.req_id)
             session.add(conn)
             connections_to_process.append(conn)
-            texts_to_process.append(entry.content)
-            embeddings.append(entry.embeddings)
+            texts_to_process.append(document.content)
+            embeddings.append(document.embeddings)
             await session.commit()
 
         for conn, text, embedding in zip(
@@ -73,6 +76,7 @@ async def process(
                     },
                     query_embedding=embedding,
                     src_type=src_type,
+                    document_id=args.document_id,
                 )
                 # print(response)
 

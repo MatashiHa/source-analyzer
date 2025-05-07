@@ -1,11 +1,10 @@
-.pdm.lock
+*pdm*
 pyproject.toml
 *.env*
 *.vscode
 *__pycache__
 *.next
 *node_modules
-.pdm-python
 .venv
 *mlruns
 *outputs
@@ -14,3 +13,5 @@ pyproject.toml
 *mlartifacts
 *model
 *tokenizer
+pdm.lock
+.python*

@@ -3,6 +3,7 @@ import json
 import os
 import re
 
+import nltk
 import pandas as pd
 import pytz
 from bs4 import BeautifulSoup
@@ -11,6 +12,9 @@ from delorean import parse as delorean_date_parse
 from dotenv import load_dotenv
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import create_async_engine
+
+nltk.download("punkt")
+nltk.download("punkt_tab")
 
 load_dotenv()
 
@@ -115,6 +119,28 @@ def is_valid_json(json_string):
     except (ValueError, TypeError):
         return False
     return True
+
+
+def split_text_into_paragraphs(text, target_length=500):
+    sentences = nltk.sent_tokenize(text)  # разбиваем текст на предложения
+    paragraphs = []
+    current_paragraph = ""
+
+    for sentence in sentences:
+        # Если добавление нового предложения не превысит целевой размер
+        if len(current_paragraph + sentence) <= target_length:
+            current_paragraph += sentence + " "
+        else:
+            # Если абзац уже достаточно большой, сохраняем его
+            if current_paragraph:
+                paragraphs.append(current_paragraph.strip())
+            current_paragraph = sentence + " "
+
+    # Добавляем последний абзац
+    if current_paragraph:
+        paragraphs.append(current_paragraph.strip())
+
+    return paragraphs
 
 
 # def get_logger(name: str) -> logging.Logger:

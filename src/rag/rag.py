@@ -6,8 +6,8 @@ from templates import context, template
 from transformers import pipeline
 
 from backend.dao.article_dao import ArticlesDAO
-from backend.document.document_dao import DocumentsDAO
 from crawler.processor import get_embeddings
+from utils import split_text_into_paragraphs
 
 torch.random.manual_seed(42)
 
@@ -21,9 +21,10 @@ async def rag_processing(
     model: any,
     embedding_model: any,
     device: str,
-    request: dict,
+    request: dict[str, str],
     query_embedding: any,
     src_type: str,
+    document_id: str | None,
 ) -> str:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
@@ -62,10 +63,16 @@ async def rag_processing(
         ]
         rag_query = " ".join(combined_results)
 
+    # если обрабоатвается документ контектс должен состоять из фрагментов текста того же источника
+    # сами ответы модели можно не брать, чтобы не перегружать
     if src_type == "document":
-        result = await DocumentsDAO.get_relevant_data_from_documents(
-            query_embedding=query_embedding
-        )
+        # делим документ на части до 500 символов
+        texts = split_text_into_paragraphs(request["text"], 500)
+
+        # для каждого абзаца вычисляем косинусное расстояние
+
+        # по циклу обрабатываем части документа, гдеберём 5 близких по тексту абзацев в контекст
+
         combined_results = [
             f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
             if response
