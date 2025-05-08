@@ -4,12 +4,14 @@ import os
 import re
 
 import nltk
+import numpy as np
 import pandas as pd
 import pytz
 from bs4 import BeautifulSoup
 from dateutil import parser as dateutil_parser
 from delorean import parse as delorean_date_parse
 from dotenv import load_dotenv
+from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -141,6 +143,28 @@ def split_text_into_paragraphs(text, target_length=500):
         paragraphs.append(current_paragraph.strip())
 
     return paragraphs
+
+
+def find_top_similar_texts(
+    texts: list[str],
+    embeddings: np.ndarray,
+    top_k: int = 5,
+    exclude_self: bool = True,
+) -> dict[str, list[str]]:  # Теперь возвращает список строк, а не кортежей
+    sim_matrix = cosine_similarity(embeddings)
+    top_matches = {}
+
+    for i, text in enumerate(texts):
+        sim_scores = sim_matrix[i]
+
+        if exclude_self:
+            sim_scores[i] = -np.inf
+
+        top_indices = np.argsort(sim_scores)[-top_k:][::-1]
+        matches = [texts[j] for j in top_indices]  # Берём только текст, без сходства
+        top_matches[text] = matches
+
+    return top_matches
 
 
 # def get_logger(name: str) -> logging.Logger:

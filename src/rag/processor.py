@@ -65,7 +65,7 @@ async def process(
         ):
             # print((await llm_conn.awaitable_attrs.article).title)
             try:
-                response = await rag_processing(
+                responses = await rag_processing(
                     tokenizer=tokenizer,
                     model=model,
                     embedding_model=embedding_model,
@@ -76,13 +76,12 @@ async def process(
                     },
                     query_embedding=embedding,
                     src_type=src_type,
-                    document_id=args.document_id,
                 )
                 # print(response)
 
-                response = remove_json_markdown(response)
-                if is_valid_json(response):
-                    conn.response = response
+                responses = map(remove_json_markdown, responses)
+                if map(is_valid_json, responses):
+                    conn.response = responses
             except Exception as e:
                 print(e)
                 conn.response = {"error": str(e)}

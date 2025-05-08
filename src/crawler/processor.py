@@ -32,7 +32,7 @@ def get_embeddings(
             max_length=1024,
         ).to(device)
     else:
-        # case when a single string with no column is passed
+        # case when a single column with no column name is passed
         inputs = tokenizer(
             df[0].to_list(),
             return_tensors="pt",

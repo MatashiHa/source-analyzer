@@ -7,7 +7,7 @@ from transformers import pipeline
 
 from backend.dao.article_dao import ArticlesDAO
 from crawler.processor import get_embeddings
-from utils import split_text_into_paragraphs
+from utils import find_top_similar_texts, split_text_into_paragraphs
 
 torch.random.manual_seed(42)
 
@@ -24,8 +24,7 @@ async def rag_processing(
     request: dict[str, str],
     query_embedding: any,
     src_type: str,
-    document_id: str | None,
-) -> str:
+) -> list[str]:
     """get embedding of a query, retrieve relevant context from database
     and generate the response
 
@@ -41,7 +40,7 @@ async def rag_processing(
             tokenizer=tokenizer,
             model=embedding_model,
             device=device,
-            df=pd.DataFrame({request["text"]}),
+            df=pd.DataFrame(request["text"]),
         )
     query_embedding = query_embedding.tolist()[0]
     # print(shape)
@@ -50,44 +49,6 @@ async def rag_processing(
     #     query_embedding = projection(query_embedding)
 
     # making async request to database with set condition to get 5 max relevant examples
-    if src_type == "feed":
-        result = await ArticlesDAO.get_relevant_data_from_articles(
-            query_embedding=query_embedding
-        )
-        # <text>:{title}. {description};
-        combined_results = [
-            f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
-            if response
-            else f"{title}.{description}"
-            for title, description, category, response in result
-        ]
-        rag_query = " ".join(combined_results)
-
-    # если обрабоатвается документ контектс должен состоять из фрагментов текста того же источника
-    # сами ответы модели можно не брать, чтобы не перегружать
-    if src_type == "document":
-        # делим документ на части до 500 символов
-        texts = split_text_into_paragraphs(request["text"], 500)
-
-        # для каждого абзаца вычисляем косинусное расстояние
-
-        # по циклу обрабатываем части документа, гдеберём 5 близких по тексту абзацев в контекст
-
-        combined_results = [
-            f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
-            if response
-            else f"{title}.{description}"
-            for title, description, category, response in result
-        ]
-        rag_query = " ".join(combined_results)
-
-    query_template = template.format(
-        context=rag_query, category=request["category"], text=request["text"]
-    )
-
-    # добавляем запрос к контексту
-    context.append({"role": "user", "content": query_template})
-
     pipe = pipeline(
         "text-generation",
         model=model,
@@ -100,5 +61,55 @@ async def rag_processing(
         "do_sample": False,
     }
 
-    output = pipe(context, **generation_args)
-    return output[0]["generated_text"]
+    if src_type == "feed":
+        result = await ArticlesDAO.get_relevant_data_from_articles(
+            query_embedding=query_embedding
+        )
+        # <text>:{title}. {description};
+        combined_results = [
+            f"<category>:{category};<result>:{json.dumps(response, ensure_ascii=False)}"
+            if response
+            else f"{title}.{description}"
+            for title, description, category, response in result
+        ]
+        rag_query = " ".join(combined_results)
+        query_template = template.format(
+            context=rag_query, category=request["category"], text=request["text"]
+        )
+
+        # добавляем запрос к контексту
+        context.append({"role": "user", "content": query_template})
+
+        output = pipe(context, **generation_args)
+        return [output[0]["generated_text"]]
+
+    # если обрабоатвается документ контектс должен состоять из фрагментов текста того же источника
+    # сами ответы модели можно не брать, чтобы не перегружать
+    if src_type == "document":
+        # делим документ на части до 500 символов
+        texts = split_text_into_paragraphs(request["text"], 500)
+        # для каждого абзаца вычисляем эмбеддинг и косинусное расстояние
+        embeddings, _ = get_embeddings(
+            tokenizer=tokenizer,
+            model=embedding_model,
+            device=device,
+            df=pd.DataFrame(texts),
+        )[0].values.tolist()
+
+        responses = []
+        # Получаем топ-3 похожих текста для каждого
+        result = find_top_similar_texts(texts, embeddings, top_k=3)
+
+        # Выводим результаты
+        for text, similar_texts in result.items():
+            rag_query = "//".join(similar_texts)
+            query_template = template.format(
+                context=rag_query, category=request["category"], text=text
+            )
+
+            # добавляем запрос к контексту
+            context.append({"role": "user", "content": query_template})
+
+            output = pipe(context, **generation_args)
+            responses.append(output[0]["generated_text"])
+        return responses
