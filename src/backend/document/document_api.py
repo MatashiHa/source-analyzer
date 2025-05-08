@@ -16,18 +16,26 @@ router = APIRouter(prefix="/document", tags=["Document"])
 #     return {"message": f"{count} news was loaded!"}
 
 
+class Args:
+    document_id: int
+    req_id: int
+
+
 # запуск единичного анализа документа
 @router.post("/process")
-async def process(req_id: int, feed_id: int):
+async def process(req_id: int, document_id: int):
     from rag.processor import process
 
     analysis = await AnalysesDAO().find_one_or_none_by_id(req_id)
     if not analysis:
         return Exception("Analysis not found")
 
-    document = await DocumentsDAO().find_one_or_none_by_id(feed_id)
+    document = await DocumentsDAO().find_one_or_none_by_id(document_id)
     if not document:
         return Exception("Feed was not found")
 
+    args = Args()
+    args.document_id = document.document_id
+    args.req_id = analysis.request_id
     await process()
     return {"message": "Processing started!"}

@@ -263,7 +263,7 @@ export function FileUploader({onTextExtracted, onUploadError}: FileUploaderProps
                 Uploaded!
               </>
             ) : (
-              'Upload Files to Database'
+              'Upload Files'
             )}
           </Button>
         </>

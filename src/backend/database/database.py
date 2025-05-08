@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 from utils import get_async_db_connection_engine
 
 # настраиваем асинхронное взаимодействие с базой данных pgsql с использованием sqlalchemy

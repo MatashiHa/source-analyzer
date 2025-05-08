@@ -1,6 +1,5 @@
 from collections import namedtuple
 from datetime import datetime
-from typing import List
 
 import feedparser
 import pandas as pd
@@ -21,7 +20,7 @@ Feed = namedtuple("Feed", ["id", "url"])
 
 class RSSCrawler:
     # потенциально можно будет сделать API и связать с processor
-    def __init__(self, session: AsyncSession, urls: List):
+    def __init__(self, session: AsyncSession, urls: list):
         """Class representing RSS crawler to read, process and update vector DB
 
         Args:
@@ -39,10 +38,10 @@ class RSSCrawler:
             pd.Dataframe: a Dataframe with title, publication time,
             link and description if exists
         """
-        dataframes_per_url: List[pd.DataFrame] = []
+        dataframes_per_url: list[pd.DataFrame] = []
 
         for feed in tqdm(feeds, total=len(feeds)):
-            feed_data: List[feedparser.util.FeedParserDict] = feedparser.parse(
+            feed_data: list[feedparser.util.FeedParserDict] = feedparser.parse(
                 feed.url
             )["entries"]
             if len(feed_data) == 0:
@@ -59,7 +58,7 @@ class RSSCrawler:
 
     @staticmethod
     async def __parse_rss_feed(
-        feed: List[feedparser.util.FeedParserDict],
+        feed: list[feedparser.util.FeedParserDict],
     ) -> pd.DataFrame:
         """Parses a single RSS feed and fetches titles, sources, publications timestamps and .
 
