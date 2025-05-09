@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 import torch
 from dotenv import load_dotenv
@@ -25,6 +26,8 @@ else:
     bnb_config = None
 
 
+# используем кэширование чтобы не инициализировать одну модель дважды при вызове из других модулей
+@lru_cache(maxsize=1)
 def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(
         os.getenv("LLM_MODEL_NAME"),
@@ -34,6 +37,7 @@ def load_tokenizer():
     return tokenizer
 
 
+@lru_cache(maxsize=1)
 def load_embedding_model(tokenizer):
     embedding_model = AutoModel.from_pretrained(
         os.getenv("EMBEDDING_MODEL_NAME"),
@@ -43,6 +47,7 @@ def load_embedding_model(tokenizer):
     return embedding_model
 
 
+@lru_cache(maxsize=1)
 def load_model():
     model = AutoModelForCausalLM.from_pretrained(
         os.getenv("LLM_MODEL_NAME"),

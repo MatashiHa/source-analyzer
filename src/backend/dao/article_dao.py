@@ -2,6 +2,7 @@ import select
 
 from database.database import async_session_maker
 from sqlalchemy import exists
+from sqlalchemy.dialects.postgresql import insert
 
 from backend.dao.base import BaseDAO
 from backend.database.models import AnalysisRequest, Article, LLMConnection
@@ -58,3 +59,22 @@ class ArticlesDAO(BaseDAO):
 
             result = await session.execute(stmt)
             return result.all()
+
+    @classmethod
+    async def upsert(
+        cls,
+        df,
+    ):
+        async with async_session_maker() as session:
+            for _, row in df.iterrows():  # Итерируемся по строкам DataFrame
+                entry = row.to_dict()  # Преобразуем строку в словарь
+                stmt = (
+                    insert(Article)
+                    .values(**entry)  # Теперь entry — это словарь
+                    .on_conflict_do_update(
+                        index_elements=["article_id"],  # Уникальный ключ для проверки
+                        set_=entry,  # Обновляем все поля
+                    )
+                )
+                await session.execute(stmt)
+            await session.commit()

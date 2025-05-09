@@ -42,6 +42,7 @@ async def rag_processing(
             device=device,
             df=pd.DataFrame(request["text"]),
         )
+
     query_embedding = query_embedding.tolist()[0]
     # print(shape)
     # if shape != 768:

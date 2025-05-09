@@ -1,16 +1,21 @@
-from fastapi import APIRouter, Request
+import re
+
+import pandas as pd
+from fastapi import APIRouter, Depends, Request
 
 from backend.analysis.analysis_dao import AnalysesDAO
 from backend.auth.auth_api import get_current_user
 from backend.document.document_api import process
 from backend.document.document_dao import DocumentsDAO
 from backend.feed.feed_dao import FeedsDAO
+from crawler.processor import get_embeddings
+from crawler.scraper.scraper.spiders.doc_crawler import import_data
+from models.models import device, load_embedding_model, load_tokenizer
 from utils import split_text_into_paragraphs
 
 
 def examples_formatting(examples: str, categories):
     examples = examples.split(";")
-    import re
 
     formated_list = []
     for example in examples:
@@ -37,7 +42,11 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
 
 @router.post("/create")
-async def create_new_analysis(request: Request):
+async def create_new_analysis(
+    request: Request,
+    tokenizer=Depends(load_tokenizer),
+    embedding_model=Depends(load_embedding_model),
+):
     data = await request.json()
     name: str = data["name"]
     categories: str = data["categories"]
@@ -47,15 +56,15 @@ async def create_new_analysis(request: Request):
     description: str = data.get("description")
     examples: str = data.get("examples")
     urls: str = data.get("urls")
+    urls_arr = urls.split()
     document: str = data.get("docs")
 
     user = await get_current_user(request)
-    feed_dao = FeedsDAO()
 
     # async def process_sources():
     # обработка фидов запускается по расписанию планировщиком
     if source_type == "links" and analysis_type == "monitoring":
-        urls_arr = urls.split()
+        feed_dao = FeedsDAO()
         # feeds_to_process = []
         for url in urls_arr:
             feed = await feed_dao.find_one_or_none(url=url)
@@ -68,16 +77,21 @@ async def create_new_analysis(request: Request):
 
     # загрузка документов в БД
     if analysis_type == "single":
-        if source_type == "files":
-            title = split_text_into_paragraphs(document, 50)
-            description = split_text_into_paragraphs(document, 300)
-            document_obj = await DocumentsDAO().add(
-                title=title, content=document, user_id=user.user_id
-            )
+        if source_type == "links" and len(urls_arr) == 1:
+            # пока обрабатваем только первую ссылку
+            document = import_data(urls_arr[0])[0]
 
-        if source_type == "links":
-            pass  # TODO
-
+        document_obj = await DocumentsDAO().add(
+            url=url,
+            title=split_text_into_paragraphs(document, 50),
+            description=split_text_into_paragraphs(document, 300),
+            content=document,
+            embeddings=get_embeddings(
+                tokenizer, embedding_model, device, pd.DataFrame(document)
+            )[0],
+        )
+        if len(urls_arr) > 1:
+            return {"error": "Too many links"}
     formated_examples = examples_formatting(examples, categories) if examples else ""
 
     # создаение анализа

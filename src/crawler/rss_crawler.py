@@ -4,12 +4,9 @@ from datetime import datetime
 import feedparser
 import pandas as pd
 from mmh3 import hash as mmh3_hash
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession
 from tqdm import tqdm
 
-from backend.database.database import async_session_maker
-from backend.database.models import Article
+from backend.dao.article_dao import ArticlesDAO
 from models.models import device, embedding_model, tokenizer
 from utils import filter_on_publication_date, parse_html, parse_time
 
@@ -20,15 +17,12 @@ Feed = namedtuple("Feed", ["id", "url"])
 
 class RSSCrawler:
     # потенциально можно будет сделать API и связать с processor
-    def __init__(self, session: AsyncSession, urls: list):
+    def __init__(self, urls: list):
         """Class representing RSS crawler to read, process and update vector DB
 
         Args:
-            session (AsyncSession): session to make transactions to DB
             urls (Set[str]): set of urls to get rss feed form
-            embedding_model (any): text preprocessing from processor.py
         """
-        self.session = session
         self.feeds = [Feed(*item) for item in urls]
 
     async def parse_rss_feeds(self, feeds) -> pd.DataFrame:
@@ -112,27 +106,14 @@ class RSSCrawler:
 
         return df
 
-    async def update_db(self, session: AsyncSession, df: pd.DataFrame):
+    async def update_db(self, df: pd.DataFrame):
         """Writes scraped content into a table
 
         Args:
             df (pd.DataFrame): a pandas DataFrame output
             table_name (str): table name to write data to
         """
-
-        # for entry in df:
-        for _, row in df.iterrows():  # Итерируемся по строкам DataFrame
-            entry = row.to_dict()  # Преобразуем строку в словарь
-            stmt = (
-                insert(Article)
-                .values(**entry)  # Теперь entry — это словарь
-                .on_conflict_do_update(
-                    index_elements=["article_id"],  # Уникальный ключ для проверки
-                    set_=entry,  # Обновляем все поля
-                )
-            )
-            await session.execute(stmt)
-        await session.commit()
+        await ArticlesDAO().upsert(df)
 
     async def run(self, tokenizer, model, device):
         # прнимаем запрос от пользователя с url
@@ -158,8 +139,7 @@ class RSSCrawler:
         filtered_df.loc[:, "embeddings"] = list(df_with_embeddings.numpy())
         print("data processed")
 
-        async with async_session_maker() as session:
-            await self.update_db(session, filtered_df)
+        await self.update_db(filtered_df)
         print("DB updated!")
         return count
 
@@ -169,9 +149,9 @@ async def import_data(
 ):
     """creates and runs the crawler"""
     data = getattr(args, "urls", args)
-    async with async_session_maker() as session:
-        crawler = RSSCrawler(session, data)
-        await crawler.run(tokenizer, embedding_model, device)
+    # async with async_session_maker() as session:
+    crawler = RSSCrawler(data)
+    await crawler.run(tokenizer, embedding_model, device)
 
 
 # if __name__ == "__main__":
