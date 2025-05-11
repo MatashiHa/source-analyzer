@@ -1,7 +1,9 @@
+import csv
 import datetime
 import json
 import os
 import re
+from pathlib import Path
 
 import nltk
 import numpy as np
@@ -165,6 +167,13 @@ def find_top_similar_texts(
         top_matches[text] = matches
 
     return top_matches
+
+
+def write_request(req: list):
+    data_path = Path("~/data").expanduser()
+    with open(f"{data_path}/requests.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(req)
 
 
 # def get_logger(name: str) -> logging.Logger:

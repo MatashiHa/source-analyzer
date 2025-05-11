@@ -11,7 +11,7 @@ from backend.feed.feed_dao import FeedsDAO
 from crawler.processor import get_embeddings
 from crawler.scraper.scraper.spiders.doc_crawler import import_data
 from models.models import device, load_embedding_model, load_tokenizer
-from utils import split_text_into_paragraphs
+from utils import split_text_into_paragraphs, write_request
 
 
 def examples_formatting(examples: str, categories):
@@ -56,7 +56,7 @@ async def create_new_analysis(
     description: str = data.get("description")
     examples: str = data.get("examples")
     urls: str = data.get("urls")
-    urls_arr = urls.split()
+    urls_list = urls.split()
     document: str = data.get("docs")
 
     user = await get_current_user(request)
@@ -66,20 +66,20 @@ async def create_new_analysis(
     if source_type == "links" and analysis_type == "monitoring":
         feed_dao = FeedsDAO()
         # feeds_to_process = []
-        for url in urls_arr:
-            feed = await feed_dao.find_one_or_none(url=url)
-            if feed:
+        for url in urls_list:
+            feed_obj = await feed_dao.find_one_or_none(url=url)
+            if feed_obj:
                 await feed_dao.connect_user_to_existing_feed(
-                    user_id=user.user_id, feed_id=feed.feed_id
+                    user_id=user.user_id, feed_id=feed_obj.feed_id
                 )
             else:
-                await feed_dao.add(url=url)
+                feed_obj = await feed_dao.add(url=url)
 
     # загрузка документов в БД
     if analysis_type == "single":
-        if source_type == "links" and len(urls_arr) == 1:
+        if source_type == "links" and len(urls_list) == 1:
             # пока обрабатваем только первую ссылку
-            document = import_data(urls_arr[0])[0]
+            document = import_data(urls_list[0])[0]
 
         document_obj = await DocumentsDAO().add(
             url=url,
@@ -90,9 +90,9 @@ async def create_new_analysis(
                 tokenizer, embedding_model, device, pd.DataFrame(document)
             )[0],
         )
-        if len(urls_arr) > 1:
+        if len(urls_list) > 1:
             return {"error": "Too many links"}
-    formated_examples = examples_formatting(examples, categories) if examples else ""
+    formated_examples = examples_formatting(examples, categories) if examples else None
 
     # создаение анализа
     analysis_obj = await AnalysesDAO().add(
@@ -108,6 +108,13 @@ async def create_new_analysis(
     if analysis_type == "single" and len(document) < 2500:
         await process(document_obj.document_id, analysis_obj.analysis_id)
 
+    # записывам запрос в csv файл для последующего запуска обработки
+    if analysis_type == "monitoring":
+        request = [analysis_obj.analysis_id, feed_obj.feed_id, ""]
+    else:
+        request = [analysis_obj.analysis_id, "", document_obj.document_id]
+
+    write_request(request)
     # return StreamingResponse(process_sources, media_type="application/x-ndjson")
 
 

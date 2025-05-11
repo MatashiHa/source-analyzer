@@ -218,7 +218,7 @@ export default function NewAnalysisPage() {
                       <Label htmlFor="source-links">Source Links</Label>
                       <Textarea name="urls" id="source-links" placeholder="Enter URLs (one per line)" className="min-h-[120px]" required/>
                       <p className="text-xs text-muted-foreground">
-                        Enter one URL per line. The system will crawl and analyze each link.
+                        Enter one URL per line. The system will crawl and analyze each link. (RSS-feed URLs for monitoring or single page URL for single analysis)
                       </p>
                     </div>
                   )}

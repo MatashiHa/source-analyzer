@@ -17,9 +17,9 @@ router = APIRouter(prefix="/feed", tags=["Feed"])
 async def import_data():
     from crawler.rss_crawler import import_data
 
-    urls = await FeedsDAO.get_all_feed_ids_with_urls()
+    id_url = await FeedsDAO.get_all_feed_ids_with_urls()
 
-    count = await import_data(urls)
+    count = await import_data(id_url)
     return {"message": f"{count} news was loaded!"}
 
 
