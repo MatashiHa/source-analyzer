@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useLanguage } from "@/components/language-provider"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -10,44 +10,36 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTitle
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Clock,
-  Calendar,
-  Bell,
-  Search,
-  Filter,
-  Plus,
-  MoreHorizontal,
-  Play,
-  Pause,
-  Edit,
-  Trash2,
   AlertCircle,
-  RefreshCw,
+  ArrowUpRight,
+  Calendar,
+  ChevronLeft,
+  Clock,
+  Edit,
   Eye,
   FileText,
-  ArrowUpRight,
-  ChevronLeft,
+  MoreHorizontal,
+  Pause,
+  Play,
+  RefreshCw,
+  Search,
+  Trash2
 } from "lucide-react"
-import { useLanguage } from "@/components/language-provider"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 // Sample monitoring schedules data
 const schedules = [

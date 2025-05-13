@@ -3,6 +3,7 @@ import re
 import pandas as pd
 from fastapi import APIRouter, Depends, Request
 
+# from models.models import device, load_embedding_model, load_tokenizer
 from backend.analysis.analysis_dao import AnalysesDAO
 from backend.auth.auth_api import get_current_user
 from backend.document.document_api import process
@@ -10,8 +11,18 @@ from backend.document.document_dao import DocumentsDAO
 from backend.feed.feed_dao import FeedsDAO
 from crawler.processor import get_embeddings
 from crawler.scraper.scraper.spiders.doc_crawler import import_data
-from models.models import device, load_embedding_model, load_tokenizer
 from utils import split_text_into_paragraphs, write_request
+
+
+def load_embedding_model():
+    pass
+
+
+def load_tokenizer():
+    pass
+
+
+device = "CUDA"
 
 
 def examples_formatting(examples: str, categories):
@@ -81,7 +92,7 @@ async def create_new_analysis(
             # пока обрабатваем только первую ссылку
             document = import_data(urls_list[0])[0]
 
-        document_obj = await DocumentsDAO().add(
+        document_obj = await DocumentsDAO.add(
             url=url,
             title=split_text_into_paragraphs(document, 50),
             description=split_text_into_paragraphs(document, 300),
@@ -95,7 +106,7 @@ async def create_new_analysis(
     formated_examples = examples_formatting(examples, categories) if examples else None
 
     # создаение анализа
-    analysis_obj = await AnalysesDAO().add(
+    analysis_obj = await AnalysesDAO.add(
         name=name,
         category=categories,
         examples=formated_examples,
@@ -121,8 +132,7 @@ async def create_new_analysis(
 @router.get("/templates")
 async def get_templates(request: Request):
     user = await get_current_user(request)
-    analysis_dao = AnalysesDAO()
-    users_analyses = await analysis_dao.find_all(user_id=user.user_id)
+    users_analyses = await AnalysesDAO.find_all(user_id=user.user_id)
     templates = [
         {
             "id": analysis.request_id,

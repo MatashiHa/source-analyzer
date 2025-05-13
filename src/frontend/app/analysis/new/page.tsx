@@ -2,31 +2,42 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { FileUploader } from "@/components/file-uploader"
+import { TemplateSelect } from "@/components/templates-select"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileUploader } from "@/components/file-uploader"
-import { ChevronLeft } from "lucide-react"
+import { useTemplates } from "@/hooks/use-templates"
 import api from "@/lib/api"
+import { ChevronLeft } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 export default function NewAnalysisPage() {
   const router = useRouter()
+  // const searchParams = useSearchParams()
+  // const templateQuery = searchParams.get('template')
+    
   const [analysisType, setAnalysisType] = useState("single")
   const [sourceType, setSourceType] = useState("files")
   const [template, setTemplate] = useState(true)
   const [extractedTexts, setExtractedTexts] = useState<{text: string}[]>([]);
+
+  const [categories, setCategories] = useState("")
+  const { templates, loading, error } = useTemplates();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const formData = new FormData(e.currentTarget)
-      
+
+      if (template) {
+        formData.set('categories', categories)      
+      }
       // Добавляем все извлеченные тексты в FormData
       extractedTexts.forEach((item) => {
         formData.append(`docs`, item.text);
@@ -50,6 +61,10 @@ export default function NewAnalysisPage() {
   //   }));
   // };
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  
+  
   const handleUploadError = (error: Error) => {
     console.error('Upload error:', error);
     alert(`Error: ${error.message}`);
@@ -106,22 +121,6 @@ export default function NewAnalysisPage() {
                   </div>
                 </RadioGroup>
               </div>
-              {/* {analysisType === "monitoring" && (
-                <div className="grid gap-3">
-                  <Label htmlFor="update-frequency">Update Frequency</Label>
-                  <Select defaultValue="daily">
-                    <SelectTrigger id="update-frequency">
-                      <SelectValue placeholder="Select frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )} */}
               <div className="grid gap-3">
                 <CardDescription>Choose classes for analysis from:</CardDescription>
                 <div className="grid gap-3">
@@ -133,24 +132,15 @@ export default function NewAnalysisPage() {
                 
                 <Label htmlFor="classification-template">Classification Templates</Label>
                 {template ? (
-                  <Select name="template_name" defaultValue="default">
-                    <SelectTrigger id="classification-template">
-                      <SelectValue placeholder="Select template" />
-                    </SelectTrigger>
-                    
-                    <SelectContent>
-                      <SelectItem value="default">Default Template</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <TemplateSelect 
+                      templates={templates} 
+                      onChange={setCategories}
+                    /> 
                   ) : (
                     <Select disabled>
                       <SelectTrigger id="classification-template">
                         <SelectValue placeholder="Select template" />
                       </SelectTrigger>
-                      
-                      <SelectContent>
-                        <SelectItem value="default">Default Template</SelectItem>
-                      </SelectContent>
                     </Select>
                 )}
                 <CardDescription>To make analysis more efficient give it some context!</CardDescription>
@@ -233,7 +223,7 @@ export default function NewAnalysisPage() {
             </Button>
             { sourceType === "files" && analysisType === "single"  ? (
               <Button 
-                type="submit" 
+                type="submit"
                 disabled={extractedTexts.length === 0}
               >
                   Start Analysis

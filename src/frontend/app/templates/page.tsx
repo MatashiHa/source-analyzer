@@ -1,34 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import { Plus, MoreHorizontal, Edit, Trash2, Copy, Tag, FileText, Clock, CheckCircle2, AlertCircle, ChevronLeft } from "lucide-react"
+import { useTemplates } from "@/hooks/use-templates"
+import { ChevronLeft, Tag } from "lucide-react"
 import Link from "next/link"
-import api from "@/lib/api"
-
+import { useRouter } from "next/navigation"
 // Sample template data
 const base = [
   {
@@ -40,53 +18,9 @@ const base = [
   },
 ]
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  categories: string[];
-  isDefault: boolean;
-}
-
 export default function TemplatesPage() {
   const router = useRouter()
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  // const [newTemplateName, setNewTemplateName] = useState("")
-  // const [newTemplateDescription, setNewTemplateDescription] = useState("")
-  // const [activeTab, setActiveTab] = useState("all")
-  // const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  
-  useEffect(() => {
-      // Отправляем код на бэкенд для получения токена
-      api.get<{templates: Template[]}>(`/analysis/templates`)
-        .then(response => {
-          setTemplates(response.data.templates);
-        })
-        .catch(error => {
-          setError(error.message);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }, []);
-  // const handleCreateTemplate = () => {
-  //   // In a real app, this would create a new template
-  //   setIsCreateDialogOpen(false)
-  //   setNewTemplateName("")
-  //   setNewTemplateDescription("")
-  //   // Navigate to template editor
-  //   router.push("/templates/new")
-  // }
-
-  // const filteredTemplates =
-  //   activeTab === "all"
-  //     ? templates
-  //     : activeTab === "default"
-  //       ? templates.filter((t) => t.isDefault)
-  //       : templates.filter((t) => !t.isDefault)
+  const { templates, loading, error } = useTemplates();
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;

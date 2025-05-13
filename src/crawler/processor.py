@@ -1,5 +1,4 @@
 import pandas as pd
-import torch
 
 
 # Функция для получения эмбеддингов предложений
@@ -22,6 +21,8 @@ def get_embeddings(
     Returns:
         pd.DataFrame: processed dataframe with embeddings column
     """
+    import torch
+
     if col_name in df.columns:
         # Токенизация и получение эмбеддингов
         inputs = tokenizer(
