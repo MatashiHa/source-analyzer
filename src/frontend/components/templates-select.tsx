@@ -9,7 +9,7 @@ interface Template {
     description: string;
     categories: string[];
     isDefault: boolean;
-  }
+}
 
 interface TemplateSelectProps {
   templates: Template[]

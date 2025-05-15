@@ -1,18 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { MarkupEditor } from "@/components/markup-editor"
+import { SourceSummary } from "@/components/source-summary"
+import { SourceTable } from "@/components/source-table"
+import { SourceVisualizations } from "@/components/source-visualizations"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft, Download, Share2, Bookmark, Filter, BarChart2, PieChart, LineChart, Cloud, Edit, CheckCircle2 } from "lucide-react"
-import { SourceTable } from "@/components/source-table"
-import { SourceClassification } from "@/components/source-classification"
-import { SourceVisualizations } from "@/components/source-visualizations"
-import { SourceSummary } from "@/components/source-summary"
-import { Badge } from "@/components/ui/badge"
-import { MarkupEditor } from "@/components/markup-editor"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CheckCircle2, ChevronLeft, Edit, Filter } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
 
 export default function ResultsPage() {
   const [timeRange, setTimeRange] = useState("all")

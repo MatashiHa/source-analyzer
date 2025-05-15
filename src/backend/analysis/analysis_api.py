@@ -132,7 +132,7 @@ async def create_new_analysis(
 @router.get("/templates")
 async def get_templates(request: Request):
     user = await get_current_user(request)
-    users_analyses = await AnalysesDAO.find_all(user_id=user.user_id)
+    analyses = await AnalysesDAO.find_all(user_id=user.user_id)
     templates = [
         {
             "id": analysis.request_id,
@@ -143,6 +143,34 @@ async def get_templates(request: Request):
             ],
             "isDefault": False,
         }
-        for analysis in users_analyses
+        for analysis in analyses
     ]
     return {"templates": templates}
+
+
+@router.get("/monitoring")
+async def get_monitoring(request: Request):
+    user = await get_current_user(request)
+    analyses = AnalysesDAO().find_all(user_id=user.id)
+    conns = [analysis.conns for analysis in analyses]
+    print(conns)
+
+    schedules = [
+        {
+            "id": analysis.request_id,
+            "name": analysis.name,
+            "description": analysis.description,
+            "status": analysis.is_active,
+            "frequency": "Daily",
+            "lastRun": "",
+            "nextRun": "",
+            "sources": "",
+            "newSources": "",
+        }
+        for analysis in analyses
+    ]
+    return {"schedules": schedules}
+
+
+# @router.get("/results")
+# async def results(analysis_id)

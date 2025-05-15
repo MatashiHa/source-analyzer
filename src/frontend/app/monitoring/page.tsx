@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSchedules } from "@/hooks/use-schedules"
 import {
   AlertCircle,
   ArrowUpRight,
@@ -41,123 +42,33 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+
+// interface SceduleSelectProps {
+// templates: Schedules[]
+// onChange: (categories: string) => void
+// }
+
 // Sample monitoring schedules data
-const schedules = [
-  {
-    id: "1",
-    name: "Climate Change Research",
-    description: "Monitor new research publications on climate change",
-    frequency: "Daily",
-    lastRun: "2023-10-14T08:30:00",
-    nextRun: "2023-10-15T08:30:00",
-    status: "active",
-    sources: 142,
-    newSources: 8,
-    alerts: 3,
-    keywords: ["climate change", "global warming", "carbon emissions", "renewable energy"],
-    sourceTypes: ["Academic", "News", "Policy"],
-  },
-  {
-    id: "2",
-    name: "Market Trends Analysis",
-    description: "Track market trends in renewable energy sector",
-    frequency: "Weekly",
-    lastRun: "2023-10-10T10:00:00",
-    nextRun: "2023-10-17T10:00:00",
-    status: "active",
-    sources: 87,
-    newSources: 12,
-    alerts: 1,
-    keywords: ["renewable energy", "market trends", "solar power", "wind energy", "investment"],
-    sourceTypes: ["News", "Market Reports", "Company Releases"],
-  },
-  {
-    id: "3",
-    name: "Competitor Analysis",
-    description: "Monitor competitor activities and announcements",
-    frequency: "Daily",
-    lastRun: "2023-10-14T09:15:00",
-    nextRun: "2023-10-15T09:15:00",
-    status: "paused",
-    sources: 56,
-    newSources: 0,
-    alerts: 0,
-    keywords: ["competitor name", "product launch", "merger", "acquisition", "partnership"],
-    sourceTypes: ["News", "Press Releases", "Social Media"],
-  },
-  {
-    id: "4",
-    name: "Policy Changes",
-    description: "Track policy changes related to environmental regulations",
-    frequency: "Weekly",
-    lastRun: "2023-10-08T14:00:00",
-    nextRun: "2023-10-15T14:00:00",
-    status: "active",
-    sources: 34,
-    newSources: 5,
-    alerts: 2,
-    keywords: ["environmental policy", "regulation", "legislation", "compliance", "government"],
-    sourceTypes: ["Policy Documents", "News", "Government Releases"],
-  },
-  {
-    id: "5",
-    name: "Technology Innovations",
-    description: "Monitor new technological innovations in clean energy",
-    frequency: "Bi-weekly",
-    lastRun: "2023-10-01T11:30:00",
-    nextRun: "2023-10-15T11:30:00",
-    status: "active",
-    sources: 78,
-    newSources: 15,
-    alerts: 4,
-    keywords: ["clean energy", "innovation", "technology", "breakthrough", "patent"],
-    sourceTypes: ["Academic", "News", "Patents", "Research Reports"],
-  },
-  {
-    id: "6",
-    name: "Social Media Sentiment",
-    description: "Track social media sentiment on climate change topics",
-    frequency: "Daily",
-    lastRun: "2023-10-14T16:00:00",
-    nextRun: "2023-10-15T16:00:00",
-    status: "error",
-    sources: 215,
-    newSources: 0,
-    alerts: 1,
-    keywords: ["climate change", "global warming", "opinion", "sentiment", "public reaction"],
-    sourceTypes: ["Social Media", "Blogs", "Forums"],
-  },
-]
-
-// Frequency options
-const frequencyOptions = ["Hourly", "Daily", "Weekly", "Bi-weekly", "Monthly", "Quarterly"]
-
-// Source type options
-const sourceTypeOptions = [
-  "Academic",
-  "News",
-  "Policy Documents",
-  "Market Reports",
-  "Social Media",
-  "Blogs",
-  "Press Releases",
-  "Patents",
-  "Government Releases",
-  "Company Releases",
-  "Forums",
-]
+// const schedules = [
+//   {
+//     id: "0",
+//     name: "Climate Change Research",
+//     description: "Monitor new research publications on climate change",
+//     frequency: "Daily",
+//     lastRun: "2023-10-14T08:30:00",
+//     nextRun: "2023-10-15T08:30:00",
+//     status: "active",
+//     sources: 142,
+//     newSources: 8,
+//   },
+// ]
 
 export default function MonitoringPage() {
   const router = useRouter()
   const { t } = useLanguage()
+  const { schedules, loading, error } = useSchedules()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("all")
-  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  // const [newScheduleName, setNewScheduleName] = useState("")
-  // const [newScheduleDescription, setNewScheduleDescription] = useState("")
-  // const [newScheduleFrequency, setNewScheduleFrequency] = useState("")
-  // const [newScheduleKeywords, setNewScheduleKeywords] = useState("")
-  const [selectedSourceTypes, setSelectedSourceTypes] = useState<string[]>([])
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   // Filter schedules based on active tab and search query
@@ -173,32 +84,10 @@ export default function MonitoringPage() {
       if (!searchQuery) return true
       return (
         schedule.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        schedule.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        schedule.keywords.some((keyword) => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
+        schedule.description.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })
 
-  // const handleCreateSchedule = () => {
-  //   // In a real app, this would create a new monitoring schedule
-  //   setIsCreateDialogOpen(false)
-  //   setNewScheduleName("")
-  //   setNewScheduleDescription("")
-  //   setNewScheduleFrequency("")
-  //   setNewScheduleKeywords("")
-  //   setSelectedSourceTypes([])
-  //   // Navigate to the new schedule or refresh the list
-  // }
-
-  // const toggleSourceType = (type: string) => {
-  //   setSelectedSourceTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
-  // }
-
-  const handleRunNow = () => {
-    // In a real app, this would trigger all active schedules to run
-    alert("Running all active monitoring schedules")
-    // You could also navigate to a page showing all running schedules
-    // router.push("/monitoring/running-all")
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -212,6 +101,9 @@ export default function MonitoringPage() {
         return <Badge variant="outline">{status}</Badge>
     }
   }
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="py-8 px-8 flex flex-col items-center">
@@ -286,7 +178,7 @@ export default function MonitoringPage() {
                         <Eye className="mr-2 h-4 w-4" />
                         {t("monitoring.viewDetails")}
                       </DropdownMenuItem> */}
-                      <DropdownMenuItem>
+                      <DropdownMenuItem disabled>
                         <Edit className="mr-2 h-4 w-4" />
                         {t("common.edit")} {t("common.schedule")}
                       </DropdownMenuItem>
