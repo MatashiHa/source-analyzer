@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 
 import pandas as pd
 from fastapi import APIRouter, Depends, Request
@@ -152,23 +153,38 @@ async def get_templates(request: Request):
 async def get_monitoring(request: Request):
     user = await get_current_user(request)
     analyses = AnalysesDAO().find_all(user_id=user.id)
-    conns = [analysis.conns for analysis in analyses]
-    print(conns)
+    yesterday = datetime.now().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ) - timedelta(days=1)
 
-    schedules = [
-        {
-            "id": analysis.request_id,
-            "name": analysis.name,
-            "description": analysis.description,
-            "status": analysis.is_active,
-            "frequency": "Daily",
-            "lastRun": "",
-            "nextRun": "",
-            "sources": "",
-            "newSources": "",
-        }
-        for analysis in analyses
-    ]
+    schedules = []
+    for analysis in analyses:
+        conns = analysis.llm_conns
+
+        # Безопасное получение последнего created_at (если conns не пуст)
+        last_run = conns[-1].created_at.strftime("%d.%m.%Y") if conns else ""
+
+        # Считаем новые источники (за последние сутки)
+        new_sources = (
+            len([conn for conn in conns if conn.created_at >= yesterday])
+            if conns
+            else 0
+        )
+
+        schedules.append(
+            {
+                "id": analysis.request_id,
+                "name": analysis.name,
+                "description": analysis.description,
+                "status": analysis.is_active,
+                "frequency": "Daily",
+                "lastRun": last_run,
+                "nextRun": last_run + timedelta(days=1) if last_run else "",
+                "sources": len(conns),
+                "newSources": new_sources,
+            }
+        )
+
     return {"schedules": schedules}
 
 
